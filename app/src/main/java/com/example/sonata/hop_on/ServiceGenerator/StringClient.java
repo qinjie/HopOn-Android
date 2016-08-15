@@ -43,7 +43,7 @@ public interface StringClient {
     Call<ResponseBody> changePassword(@Body JsonObject toUp);
 
     @POST("station/search")
-    Call<ResponseBody> getNearestParkingStations(@Body double latitude, double longitude);
+    Call<ResponseBody> getNearestParkingStations(@Body JsonObject loc);
 
     @POST("bicycle/book")
     Call<ResponseBody> bicycleBooking();

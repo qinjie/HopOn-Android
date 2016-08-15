@@ -11,7 +11,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ServiceGenerator {
 
-    public static final String API_BASE_URL = "http://128.199.209.227/hopon-web/api/web/index.php/v1/";
+    public static final String API_BASE_URL = "http://153.20.44.136/hopon-web/api/web/index.php/v1/";
 
     private static OkHttpClient.Builder httpClient = new OkHttpClient.Builder().addInterceptor(new ErrorInterceptor());
 

@@ -10,6 +10,7 @@ import com.example.sonata.hop_on.LogIn.LogInClass;
 import com.example.sonata.hop_on.ParkingStation.ParkingStationClass;
 import com.example.sonata.hop_on.ServiceGenerator.ServiceGenerator;
 import com.example.sonata.hop_on.ServiceGenerator.StringClient;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 import java.util.Vector;
@@ -33,6 +34,23 @@ public class GlobalVariable {
     public static int mNumberOfBicycleStation;
 
     public static ArrayList<ParkingStationClass> nearestParkingStations;
+
+    public static LatLng currentLocation;
+
+    public static void setCurrentLocation(LatLng location)
+    {
+        currentLocation = location;
+    }
+
+    public static void renewNearestParkingStationData()
+    {
+        nearestParkingStations.clear();
+    }
+
+    public static void addDataToNearestParkingStationList(ParkingStationClass station)
+    {
+        nearestParkingStations.add(station);
+    }
 
     public static void checkConnected(final Activity activity) {
         String username = "123";

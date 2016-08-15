@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.Location;
@@ -22,7 +23,11 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.sonata.hop_on.GlobalVariable.GlobalVariable;
+import com.example.sonata.hop_on.Notification.Notification;
+import com.example.sonata.hop_on.Preferences;
 import com.example.sonata.hop_on.R;
+import com.example.sonata.hop_on.ServiceGenerator.ServiceGenerator;
+import com.example.sonata.hop_on.ServiceGenerator.StringClient;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.AutocompleteFilter;
@@ -41,6 +46,15 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.gson.JsonObject;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import static android.content.Context.LOCATION_SERVICE;
 
@@ -48,8 +62,10 @@ import static android.content.Context.LOCATION_SERVICE;
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link ParkingStationMapFragment.OnFragmentInteractionListener} interface
+ {@link ParkingStationMapFragment.OnFragmentInteractionListener} interface
  * to handle interaction events.
+ * Use the {@link ParkingStationMapFragment#newInstance} factory method to
+ * create an instance of this fragment.
  */
 public class ParkingStationMapFragment extends Fragment
     implements OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback {
@@ -65,6 +81,13 @@ public class ParkingStationMapFragment extends Fragment
     MapView mMapView;
 
     private OnFragmentInteractionListener mListener;
+
+    public static ParkingStationMapFragment newInstance(String param1, String param2) {
+        ParkingStationMapFragment fragment = new ParkingStationMapFragment();
+        Bundle args = new Bundle();
+        fragment.setArguments(args);
+        return fragment;
+    }
 
     public ParkingStationMapFragment() {
         // Required empty public constructor
@@ -180,6 +203,13 @@ public class ParkingStationMapFragment extends Fragment
         // Hide the zoom controls as the button panel will cover it.
         mMap.getUiSettings().setZoomControlsEnabled(false);
 
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                return false;
+            }
+        });
+
         enableMyLocation();
     }
 
@@ -192,10 +222,124 @@ public class ParkingStationMapFragment extends Fragment
             // Access to the location has been granted to the app.
             mMap.setMyLocationEnabled(true);
 
+            mMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
+                @Override
+                public boolean onMyLocationButtonClick() {
+                    Location myLocation = mMap.getMyLocation();
+
+                    //+ Move camera to current device location
+                    LatLng location = new LatLng(myLocation.getLatitude(), myLocation.getLongitude());
+                   cameraAction(location);
+                    //- Move camera to current device location
+
+                    GlobalVariable.setCurrentLocation(location);
+
+                    getNearestParkingStation(location);
+
+                    return true;
+                }
+            });
+
             // Add a marker in Singapore and move the camera
             LatLng SINGAPORE = new LatLng(1.290270, 103.851959);
             mMap.moveCamera(CameraUpdateFactory.newLatLng(SINGAPORE));
         }
+    }
+
+    private void displayStationInMap()
+    {
+        mMap.clear();
+
+        for(int i = 0; i < GlobalVariable.nearestParkingStations.size(); i++)
+        {
+            ParkingStationClass station = GlobalVariable.nearestParkingStations.get(i);
+            if (Integer.valueOf(station.getNumberOfAvailableBicycle()) == 0)
+            {
+                mMap.addMarker(new MarkerOptions()
+                        .position(station.getLocation())
+                        .icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_out_of_order_station)));
+            }
+            else
+            {
+                mMap.addMarker(new MarkerOptions()
+                        .position(station.getLocation())
+                        .icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_available_station)));
+            }
+        }
+    }
+
+    private void getNearestParkingStation(LatLng location)
+    {
+        Preferences.showLoading(context, "Parking Station", "Getting nearest parking station...");
+
+        StringClient client = ServiceGenerator.createService(StringClient.class);
+
+        JsonObject loc = new JsonObject();
+        try
+        {
+            loc.addProperty("latitude", location.latitude);
+            loc.addProperty("longitude", location.longitude);
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        Call<ResponseBody> call = client.getNearestParkingStations(loc);
+
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                try {
+                    Preferences.dismissLoading();
+                    int messageCode = response.code();
+                    if (messageCode == 200) // SUCCESS
+                    {
+                        JSONArray data =  new JSONArray(response.body().string());
+                        for(int i = 0 ; i < data.length(); i++) {
+                            JSONObject station = (JSONObject) data.get(i);
+
+                            String latitude = station.getString("latitude");
+                            String longitude = station.getString("longitude");
+                            LatLng loc = new LatLng(Double.valueOf(latitude), Double.valueOf(longitude));
+
+                            JSONObject distance = station.getJSONObject("distance");
+
+                            ParkingStationClass stationInfo = new ParkingStationClass(
+                                    loc,
+                                    station.getString("name"),
+                                    station.getString("address"),
+                                    station.getString("bicycle_count"),
+                                    station.getString("available_bicycle"),
+                                    distance.getString("text")
+                            );
+
+                            GlobalVariable.renewNearestParkingStationData();
+                            GlobalVariable.addDataToNearestParkingStationList(stationInfo);
+                        }
+
+                        displayStationInMap();
+                    }
+                    else
+                    {
+                        if (messageCode == 500) // SERVER FAILED
+                        {
+                            Notification.showMessage(context, 1);
+                        }
+                        else {
+
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+            }
+        });
+
     }
 
     private void cameraAction(LatLng targetLocation)
@@ -264,7 +408,7 @@ public class ParkingStationMapFragment extends Fragment
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnFragmentInteractionListener {
+    interface OnFragmentInteractionListener {
         void onFragmentInteraction(Uri uri);
     }
 }

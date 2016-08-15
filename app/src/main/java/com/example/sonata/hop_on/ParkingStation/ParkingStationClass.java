@@ -9,17 +9,18 @@ public class ParkingStationClass {
     LatLng location;
     String stationName;
     String stationAddress;
-    int totalNumberOfBicycle;
-    int numberOfAvailableBicycle;
+    String totalNumberOfBicycle;
+    String numberOfAvailableBicycle;
     String distance;
 
-    public ParkingStationClass(LatLng loc, String name, String address, int total, int avaiNumber)
+    public ParkingStationClass(LatLng loc, String name, String address, String total, String avaiNumber, String _distance)
     {
         location = loc;
         stationName = name;
         stationAddress = address;
         totalNumberOfBicycle = total;
         numberOfAvailableBicycle = avaiNumber;
+        distance = _distance;
     }
 
     public LatLng getLocation()
@@ -52,5 +53,5 @@ public class ParkingStationClass {
         return distance + " m";
     }
 
-    public int getNumberOfAvailableBicycle() { return numberOfAvailableBicycle; }
+    public String getNumberOfAvailableBicycle() { return numberOfAvailableBicycle; }
 }

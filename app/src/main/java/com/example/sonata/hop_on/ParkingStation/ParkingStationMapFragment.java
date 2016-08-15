@@ -6,6 +6,7 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.Location;
@@ -229,7 +230,7 @@ public class ParkingStationMapFragment extends Fragment
 
                     //+ Move camera to current device location
                     LatLng location = new LatLng(myLocation.getLatitude(), myLocation.getLongitude());
-                   cameraAction(location);
+                    cameraAction(location);
                     //- Move camera to current device location
 
                     GlobalVariable.setCurrentLocation(location);
@@ -272,8 +273,6 @@ public class ParkingStationMapFragment extends Fragment
     {
         Preferences.showLoading(context, "Parking Station", "Getting nearest parking station...");
 
-        StringClient client = ServiceGenerator.createService(StringClient.class);
-
         JsonObject loc = new JsonObject();
         try
         {
@@ -284,62 +283,73 @@ public class ParkingStationMapFragment extends Fragment
             e.printStackTrace();
         }
 
-        Call<ResponseBody> call = client.getNearestParkingStations(loc);
+        try
+        {
+            SharedPreferences pref = getActivity().getSharedPreferences("ATK_pref", 0);
+            String auCode = pref.getString("authorizationCode", null);
 
-        call.enqueue(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                try {
-                    Preferences.dismissLoading();
-                    int messageCode = response.code();
-                    if (messageCode == 200) // SUCCESS
-                    {
-                        JSONArray data =  new JSONArray(response.body().string());
-                        for(int i = 0 ; i < data.length(); i++) {
-                            JSONObject station = (JSONObject) data.get(i);
+            StringClient client = ServiceGenerator.createService(StringClient.class, auCode);
+            Call<ResponseBody> call = client.getNearestParkingStations(loc);
 
-                            String latitude = station.getString("latitude");
-                            String longitude = station.getString("longitude");
-                            LatLng loc = new LatLng(Double.valueOf(latitude), Double.valueOf(longitude));
+            call.enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    try {
+                        Preferences.dismissLoading();
+                        String temp = response.body().string();
+                        int messageCode = response.code();
 
-                            JSONObject distance = station.getJSONObject("distance");
-
-                            ParkingStationClass stationInfo = new ParkingStationClass(
-                                    loc,
-                                    station.getString("name"),
-                                    station.getString("address"),
-                                    station.getString("bicycle_count"),
-                                    station.getString("available_bicycle"),
-                                    distance.getString("text")
-                            );
-
-                            GlobalVariable.renewNearestParkingStationData();
-                            GlobalVariable.addDataToNearestParkingStationList(stationInfo);
-                        }
-
-                        displayStationInMap();
-                    }
-                    else
-                    {
-                        if (messageCode == 500) // SERVER FAILED
+                        JSONArray data =  new JSONArray(temp);
+                        if (messageCode == 200) // SUCCESS
                         {
-                            Notification.showMessage(context, 1);
-                        }
-                        else {
+                            GlobalVariable.renewNearestParkingStationData();
+                            for(int i = 0 ; i < data.length(); i++) {
+                                JSONObject station = (JSONObject) data.get(i);
 
+                                String latitude = station.getString("latitude");
+                                String longitude = station.getString("longitude");
+                                LatLng loc = new LatLng(Double.valueOf(latitude), Double.valueOf(longitude));
+
+                                JSONObject distance = station.getJSONObject("distance");
+
+                                ParkingStationClass stationInfo = new ParkingStationClass(
+                                        loc,
+                                        station.getString("name"),
+                                        station.getString("address"),
+                                        station.getString("bicycle_count"),
+                                        station.getString("available_bicycle"),
+                                        distance.getString("text")
+                                );
+
+                                GlobalVariable.addDataToNearestParkingStationList(stationInfo);
+                            }
+
+                            displayStationInMap();
                         }
+                        else
+                        {
+                            if (messageCode == 500) // SERVER FAILED
+                            {
+                                Notification.showMessage(context, 1);
+                            }
+                            else {
+
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
-            }
 
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
 
-            }
-        });
-
+                }
+            });
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
     private void cameraAction(LatLng targetLocation)

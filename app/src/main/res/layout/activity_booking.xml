@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_booking"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.example.sonata.hop_on.BicycleBooking.BookingActivity">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/parking_station"
+        android:text="@string/parking_station"
+        android:textColor="@color/wallet_bright_foreground_holo_light"
+        android:textSize="18dp"
+        android:layout_marginLeft="10dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/address_station"
+        android:textSize="16dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="10dp"
+        android:layout_below="@+id/parking_station"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/status_station"
+        android:textSize="18dp"
+        android:textColor="@color/wallet_bright_foreground_holo_light"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="20dp"
+        android:layout_below="@+id/address_station"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/bicycle_brand"
+        android:textSize="20dp"
+        android:text="@string/bicycle_brand"
+        android:textColor="@color/wallet_bright_foreground_holo_light"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:layout_below="@+id/status_station"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/bicycle_brand_detail"
+        android:textSize="24dp"
+        android:textColor="@color/wallet_bright_foreground_holo_light"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:layout_below="@+id/bicycle_brand"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/bicycle_feature_1"
+        android:text="@string/bicycle_feature_1"
+        android:textSize="18dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="30dp"
+        android:layout_below="@+id/bicycle_brand_detail"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/bicycle_feature_2"
+        android:text="@string/bicycle_feature_2"
+        android:textSize="18dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginLeft="30dp"
+        android:layout_below="@+id/bicycle_feature_1"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/bicycle_feature_3"
+        android:text="@string/bicycle_feature_3"
+        android:textSize="18dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginLeft="30dp"
+        android:layout_below="@+id/bicycle_feature_2"/>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/button"
+        android:layout_below="@id/bicycle_feature_3"
+        android:layout_marginTop="15dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:id="@+id/button_left"
+            android:background="@mipmap/ic_left_arrow"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true" />\
+
+        <Button
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:id="@+id/button_right"
+            android:background="@mipmap/ic_right_arrow"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/button_book_layout"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/book_now"
+            android:layout_centerHorizontal="true"
+            android:id="@+id/button_book" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/bicycle_image"
+        android:layout_below="@id/button"
+        android:layout_above="@+id/button_book_layout"
+        android:layout_marginTop="15dp"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:id="@+id/image"
+            android:background="@mipmap/ic_available_station"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true" />\
+
+    </RelativeLayout>
+
+</RelativeLayout>

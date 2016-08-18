@@ -6,6 +6,7 @@ import com.google.android.gms.maps.model.LatLng;
  * Created by Sonata on 8/3/2016.
  */
 public class ParkingStationClass {
+    String stationId;
     LatLng location;
     String stationName;
     String stationAddress;
@@ -13,8 +14,9 @@ public class ParkingStationClass {
     String numberOfAvailableBicycle;
     String distance;
 
-    public ParkingStationClass(LatLng loc, String name, String address, String total, String avaiNumber, String _distance)
+    public ParkingStationClass(String _stationId, LatLng loc, String name, String address, String total, String avaiNumber, String _distance)
     {
+        stationId = _stationId;
         location = loc;
         stationName = name;
         stationAddress = address;
@@ -27,6 +29,8 @@ public class ParkingStationClass {
     {
         return location;
     }
+
+    public String getStationId() { return stationId; }
 
     public String getStationName()
     {
@@ -50,8 +54,10 @@ public class ParkingStationClass {
 
     public String getDistance()
     {
-        return distance + " m";
+        return distance;
     }
 
     public String getNumberOfAvailableBicycle() { return numberOfAvailableBicycle; }
+
+    public String getBikeInformation() { return String.valueOf(numberOfAvailableBicycle) + "/" + String.valueOf(totalNumberOfBicycle); }
 }

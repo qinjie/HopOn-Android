@@ -2,6 +2,7 @@ package com.example.sonata.hop_on.LogIn;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -9,6 +10,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.example.sonata.hop_on.BicycleBooking.CurrentBookingActivity;
 import com.example.sonata.hop_on.GlobalVariable.GlobalVariable;
 import com.example.sonata.hop_on.NavigationDrawer.NavigationDrawerActivity;
 import com.example.sonata.hop_on.Notification.Notification;
@@ -163,8 +165,24 @@ public class LogInActivity extends AppCompatActivity {
 
                         GlobalVariable.setUserName(data.getString("fullname"));
 
-                        Intent intent = new Intent(LogInActivity.this, NavigationDrawerActivity.class);
-                        startActivity(intent);
+                        SharedPreferences pref = getSharedPreferences("HopOn_pref", 0);
+                        String bookingStatus = pref.getString("bookingStatus", null);
+                        if (bookingStatus == null)
+                        {
+                            GlobalVariable.setBookingStatusInSP(LogInActivity.this, GlobalVariable.FREE);
+                            bookingStatus = pref.getString("bookingStatus", null);
+                        }
+
+                        if (bookingStatus.compareTo(GlobalVariable.FREE) == 0)
+                        {
+                            Intent intent = new Intent(LogInActivity.this, NavigationDrawerActivity.class);
+                            startActivity(intent);
+                        }
+                        else if (bookingStatus.compareTo(GlobalVariable.BOOKED) == 0)
+                        {
+                            Intent intent = new Intent(LogInActivity.this, CurrentBookingActivity.class);
+                            startActivity(intent);
+                        }
                     }
                     else
                     {

@@ -9,6 +9,7 @@ import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.Query;
 
 /**
  * Created by Tung on 5/31/2016.
@@ -24,8 +25,8 @@ public interface StringClient {
     @GET("user/profile")
     Call<ResponseBody> getUserProfile();
 
-    @GET("station/detail?stationId=1")
-    Call<ResponseBody> getDetailStationInfo();
+    @GET("station/detail")
+    Call<ResponseBody> getDetailStationInfo(@Query("stationId") String stationId);
 
     @GET("rental/current-booking")
     Call<ResponseBody> getCurrentBookingInfo();
@@ -46,13 +47,16 @@ public interface StringClient {
     Call<ResponseBody> getNearestParkingStations(@Body JsonObject loc);
 
     @POST("bicycle/book")
-    Call<ResponseBody> bicycleBooking();
+    Call<ResponseBody> bicycleBooking(@Body JsonObject bookingInfo);
 
     @POST("bicycle/return")
     Call<ResponseBody> bicycleReturning();
 
     @POST("rental/history")
     Call<ResponseBody> getBookingHistory();
+
+    @POST("rental/current-booking")
+    Call<ResponseBody> getCurrentBookingInformation();
 
 
 }

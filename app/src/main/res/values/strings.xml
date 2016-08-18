@@ -30,4 +30,26 @@
         <u>change</u>
     </string>
 
+    <string name="parking_station">Parking Station</string>
+    <string name="bicycle_brand">Bicycle Brand / Model</string>
+    <string name="book_now">Book Now</string>
+
+    <string name="bicycle_feature_1">Bicycle feature 1</string>
+    <string name="bicycle_feature_2">Bicycle feature 2</string>
+    <string name="bicycle_feature_3">Bicycle feature 3</string>
+
+    <string name="booking_id">Booking ID</string>
+    <string name="booking_id_detail">A1234B1234C</string>
+    <string name="bicycle">Bicycle</string>
+    <string name="bicycle_brand_detail">XW123B</string>
+    <string name="pick_up_station">Pick Up Station</string>
+    <string name="pick_up_station_address">535 Clementi Road, Singapore, 234235</string>
+    <string name="booked_time">Booked Time</string>
+    <string name="booked_time_detail">09:30 AM, 2 Aug 2016</string>
+    <string name="pick_up_time">Pick up Time</string>
+    <string name="pick_up_time_detail">11:00 AM, 2 Aug 2016</string>
+    <string name="return_button">Return</string>
+    <string name="unlock_button">Unlock</string>
+
+
 </resources>

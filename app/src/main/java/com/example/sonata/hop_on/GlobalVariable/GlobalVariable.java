@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 
 
 import com.example.sonata.hop_on.BicycleBooking.BicycleInformationClass;
+import com.example.sonata.hop_on.BicycleBooking.BookingInformationClass;
 import com.example.sonata.hop_on.LogIn.LogInActivity;
 import com.example.sonata.hop_on.LogIn.LogInClass;
 import com.example.sonata.hop_on.ParkingStation.ParkingStationClass;

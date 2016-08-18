@@ -1,5 +1,11 @@
 package com.example.sonata.hop_on.BicycleBooking;
 
+import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -10,6 +16,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.sonata.hop_on.BeaconService.BeaconScanningService;
 import com.example.sonata.hop_on.GlobalVariable.GlobalVariable;
 import com.example.sonata.hop_on.Notification.Notification;
 import com.example.sonata.hop_on.Preferences;
@@ -19,6 +26,10 @@ import com.example.sonata.hop_on.ServiceGenerator.StringClient;
 
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -27,11 +38,36 @@ import retrofit2.Response;
 public class CurrentBookingActivity extends AppCompatActivity {
 
     private BookingInformationClass bookingInfo;
+    private Button btn_return, btn_unlock;
+    private Activity activity = this;
+
+    private BroadcastReceiver mBeaconServiceReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(final Context context, Intent intent) {
+            String type = intent.getStringExtra("type");
+            if(type.equalsIgnoreCase("Return")) {
+                Toast.makeText(getBaseContext(), "OK to Return", Toast.LENGTH_SHORT).show();
+            }else {
+                Toast.makeText(getBaseContext(), "OK to Unlock", Toast.LENGTH_SHORT).show();
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_current_booking);
+
+        btn_return = (Button) findViewById(R.id.btn_return);
+//        btn_return.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                GlobalVariable.setBookingStatusInSP(CurrentBookingActivity.this, GlobalVariable.FREE);
+//
+//            }
+//        });
+
+        btn_unlock = (Button) findViewById(R.id.button_unlock);
 
         this.setTitle("Current Booking");
 
@@ -42,14 +78,7 @@ public class CurrentBookingActivity extends AppCompatActivity {
         //TODO When beacon_station and beacon_bicycyle in range, enable return button
         //TODO When beacon_bicycle in range, enable unlock/lock button
 
-        Button btn_return = (Button) findViewById(R.id.btn_return);
-        btn_return.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                GlobalVariable.setBookingStatusInSP(CurrentBookingActivity.this, GlobalVariable.FREE);
 
-            }
-        });
     }
 
     private void getCurrentBookingInformation()
@@ -73,7 +102,36 @@ public class CurrentBookingActivity extends AppCompatActivity {
                     {
                         JSONObject data = new JSONObject(response.body().string());
                         displayBookingInformation(data);
+                        btn_return.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                registerReceiver(mBeaconServiceReceiver, new IntentFilter("OK_to_Return_or_Unlock"));
+                                Intent intent = new Intent(activity, BeaconScanningService.class);
+                                ArrayList<String> arrayList = new ArrayList<>();
+                                arrayList.add(bookingInfo.beacon_bicycle_uuid);
+                                arrayList.add(bookingInfo.beacon_bicycle_major);
+                                arrayList.add(bookingInfo.beacon_bicycle_minor);
+                                arrayList.add(bookingInfo.beacon_station_uuid);
+                                arrayList.add(bookingInfo.beacon_station_major);
+                                arrayList.add(bookingInfo.beacon_station_minor);
+                                intent.putStringArrayListExtra("arrayList", arrayList);
+                                activity.startService(intent);
 
+                            }
+                        });
+                        btn_unlock.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                registerReceiver(mBeaconServiceReceiver, new IntentFilter("OK_to_Return_or_Unlock"));
+                                Intent intent = new Intent(activity, BeaconScanningService.class);
+                                ArrayList<String> arrayList = new ArrayList<>();
+                                arrayList.add(bookingInfo.beacon_bicycle_uuid);
+                                arrayList.add(bookingInfo.beacon_bicycle_major);
+                                arrayList.add(bookingInfo.beacon_bicycle_minor);
+                                intent.putStringArrayListExtra("arrayList", arrayList);
+                                activity.startService(intent);
+                            }
+                        });
                     }
                     else if (messageCode == 400)
                     {

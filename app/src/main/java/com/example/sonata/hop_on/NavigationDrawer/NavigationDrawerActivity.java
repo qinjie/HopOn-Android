@@ -16,6 +16,7 @@ import android.widget.ExpandableListView;
 import android.widget.TextView;
 
 import com.example.sonata.hop_on.GlobalVariable.GlobalVariable;
+import com.example.sonata.hop_on.LoanHistory.LoanHistoryFragment;
 import com.example.sonata.hop_on.ParkingStation.ParkingStationMapFragment;
 import com.example.sonata.hop_on.PasswordManagement.ChangePasswordFragment;
 import com.example.sonata.hop_on.R;
@@ -96,8 +97,8 @@ public class NavigationDrawerActivity extends ActionBarActivity {
                     case 1: // Current Booking
                         //
                         break;
-                    case 2: // Parking Station Map
-                        fragment = new ParkingStationMapFragment();
+                    case 2: // History
+                        fragment = new LoanHistoryFragment();
                         break;
                     case 3: // User Profile
                         fragment = new ProfileFragment();

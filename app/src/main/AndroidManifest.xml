@@ -36,7 +36,8 @@
         <activity android:name=".ParkingStation.ParkingStationListActivity" />
         <activity android:name=".BicycleBooking.BookingActivity" />
         <activity android:name=".BicycleBooking.CurrentBookingActivity" />
-        <activity android:name=".FeedbackActivity"></activity>
+        <activity android:name=".FeedbackActivity" />
+        <activity android:name=".LoanHistory.LoanDetailedActivity"></activity>
     </application>
 
 </manifest>

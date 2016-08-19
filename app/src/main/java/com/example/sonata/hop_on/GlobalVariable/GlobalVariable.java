@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 
 
 import com.example.sonata.hop_on.BicycleBooking.BicycleInformationClass;
+import com.example.sonata.hop_on.BicycleBooking.BookingInformationClass;
 import com.example.sonata.hop_on.LogIn.LogInActivity;
 import com.example.sonata.hop_on.LogIn.LogInClass;
 import com.example.sonata.hop_on.ParkingStation.ParkingStationClass;
@@ -43,7 +44,19 @@ public class GlobalVariable {
 
     public static BicycleInformationClass selectedBicycle = null;
 
+    public static BookingInformationClass selectedLoanRecord = null;
+
     public static boolean bookingMessage = false;
+
+    public static void setSelectedLoanRecord(BookingInformationClass record)
+    {
+        selectedLoanRecord = record;
+    }
+
+    public static BookingInformationClass getSelectedLoanRecord()
+    {
+        return selectedLoanRecord;
+    }
 
     public static void setSelectedParkingStation(ParkingStationClass station)
     {

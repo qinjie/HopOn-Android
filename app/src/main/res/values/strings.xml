@@ -43,13 +43,33 @@
     <string name="bicycle">Bicycle</string>
     <string name="bicycle_brand_detail">XW123B</string>
     <string name="pick_up_station">Pick Up Station</string>
+
     <string name="pick_up_station_address">535 Clementi Road, Singapore, 234235</string>
+    <string name="returned_station_address">535 Clementi Road, Singapore, 234235</string>
+
     <string name="booked_time">Booked Time</string>
     <string name="booked_time_detail">09:30 AM, 2 Aug 2016</string>
+
     <string name="pick_up_time">Pick up Time</string>
+    <string name="return_time">Return Time</string>
+
     <string name="pick_up_time_detail">11:00 AM, 2 Aug 2016</string>
+    <string name="return_time_detail">05:31 PM, 2 Aug 2016</string>
+
     <string name="return_button">Return</string>
     <string name="unlock_button">Unlock</string>
+
+    <string name="booked">Booked</string>
+    <string name="returned">Return</string>
+    <string name="pick_up_title">Pick Up</string>
+    <string name="summary_title">Summary</string>
+    <string name="loan_duration">Loan Duration</string>
+    <string name="loan_duration_detail">8 hours 1 minute</string>
+
+
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 
 </resources>

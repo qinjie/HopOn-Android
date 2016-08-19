@@ -38,6 +38,10 @@
         <activity android:name=".BicycleBooking.CurrentBookingActivity" />
         <activity android:name=".FeedbackActivity" />
         <activity android:name=".LoanHistory.LoanDetailedActivity"></activity>
+        <service
+            android:name=".BeaconService.BeaconScanningService"
+            android:enabled="true"
+            android:exported="true" />
     </application>
 
 </manifest>

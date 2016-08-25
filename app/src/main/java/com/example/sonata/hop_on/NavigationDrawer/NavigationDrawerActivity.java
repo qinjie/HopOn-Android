@@ -1,6 +1,8 @@
 package com.example.sonata.hop_on.NavigationDrawer;
 
 import android.app.FragmentManager;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -14,11 +16,13 @@ import android.view.View;
 import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.example.sonata.hop_on.BicycleBooking.CurrentBookingActivity;
 import com.example.sonata.hop_on.GlobalVariable.GlobalVariable;
 import com.example.sonata.hop_on.LoanHistory.LoanHistoryFragment;
+import com.example.sonata.hop_on.ParkingStation.ParkingStationListActivity;
 import com.example.sonata.hop_on.ParkingStation.ParkingStationMapFragment;
-import com.example.sonata.hop_on.PasswordManagement.ChangePasswordFragment;
 import com.example.sonata.hop_on.R;
 import com.example.sonata.hop_on.UserProfile.ProfileFragment;
 
@@ -86,7 +90,9 @@ public class NavigationDrawerActivity extends ActionBarActivity {
 
         mExpandableListView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
             public boolean onGroupClick(ExpandableListView parent, View v, int groupPosition, long id) {
-                getSupportActionBar().setTitle(mExpandableListTitle.get(groupPosition).toString());
+                if (groupPosition != 1) {
+                    getSupportActionBar().setTitle(mExpandableListTitle.get(groupPosition).toString());
+                }
 
                 android.app.Fragment fragment = null;
 
@@ -95,14 +101,27 @@ public class NavigationDrawerActivity extends ActionBarActivity {
                         fragment = new ParkingStationMapFragment();
                         break;
                     case 1: // Current Booking
-                        //
-                        break;
+                        SharedPreferences pref = getSharedPreferences("HopOn_pref", 0);
+                        String bookingStatus = pref.getString("bookingStatus", null);
+                        if (bookingStatus == null || bookingStatus.compareTo(GlobalVariable.FREE) == 0)
+                        {
+                            Toast.makeText(getBaseContext(), "You are not booking any bicycle at the moment!", Toast.LENGTH_SHORT).show();
+                        }
+                        else
+                        {
+                            Intent intent = new Intent(NavigationDrawerActivity.this, CurrentBookingActivity.class);
+                            startActivity(intent);
+                        }
+                        return true;
                     case 2: // History
                         fragment = new LoanHistoryFragment();
                         break;
                     case 3: // User Profile
                         fragment = new ProfileFragment();
                         break;
+                    case 4: // Exit
+                        finish();
+                        System.exit(0);
                 }
 
                 FragmentManager fragmentManager = getFragmentManager();
@@ -165,7 +184,8 @@ public class NavigationDrawerActivity extends ActionBarActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-
+            Intent intent = new Intent(NavigationDrawerActivity.this, ParkingStationListActivity.class);
+            startActivity(intent);
             return true;
         }
 

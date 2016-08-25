@@ -19,6 +19,7 @@ public class Notification {
             "Old password incorrect! Please try again.", // 6
             "Invalid password! Please try again.", // 7
             "Invalid request! Please try again!", // 8
+            "Incorrect password! Please try again!", // 9
     };
 
     public static void showMessage(final Activity activity, final int mesCode) {

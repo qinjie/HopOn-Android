@@ -1,14 +1,21 @@
 package com.example.sonata.hop_on.UserProfile;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
+import com.example.sonata.hop_on.GlobalVariable.GlobalVariable;
+import com.example.sonata.hop_on.LogIn.LogInActivity;
+import com.example.sonata.hop_on.PasswordManagement.ChangePasswordActivity;
 import com.example.sonata.hop_on.R;
+import com.example.sonata.hop_on.SignUp.SignUpActivity;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -21,6 +28,8 @@ import com.example.sonata.hop_on.R;
 public class ProfileFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
+
+    Activity context;
 
     public ProfileFragment() {
         // Required empty public constructor
@@ -45,13 +54,42 @@ public class ProfileFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        context = getActivity();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_profile, container, false);
+        View view = inflater.inflate(R.layout.fragment_profile, container, false);
+
+        TextView changePasswordText = (TextView) view.findViewById(R.id.change_password);
+        changePasswordText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(context, ChangePasswordActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        TextView signOutText = (TextView) view.findViewById(R.id.sign_out);
+        signOutText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                GlobalVariable.logoutAction(context);
+            }
+        });
+
+        TextView changeEmailText = (TextView) view.findViewById(R.id.btn_change_email);
+        changeEmailText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(context, ChangeEmailActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        return view;
     }
 
     // TODO: Rename method, update argument and hook method into UI event

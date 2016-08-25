@@ -6,6 +6,7 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -22,14 +23,18 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.sonata.hop_on.BicycleBooking.BookingActivity;
+import com.example.sonata.hop_on.BicycleBooking.CurrentBookingActivity;
 import com.example.sonata.hop_on.GlobalVariable.GlobalVariable;
 import com.example.sonata.hop_on.Notification.Notification;
 import com.example.sonata.hop_on.Preferences;
 import com.example.sonata.hop_on.R;
 import com.example.sonata.hop_on.ServiceGenerator.ServiceGenerator;
 import com.example.sonata.hop_on.ServiceGenerator.StringClient;
+import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.Places;
 
@@ -70,9 +75,16 @@ import static android.content.Context.LOCATION_SERVICE;
  * create an instance of this fragment.
  */
 public class ParkingStationMapFragment extends Fragment
-    implements OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback {
+    implements OnMapReadyCallback,
+               GoogleApiClient.ConnectionCallbacks,
+               ActivityCompat.OnRequestPermissionsResultCallback,
+               GoogleApiClient.OnConnectionFailedListener {
 
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
+
+    public static final String TAG = CurrentBookingActivity.class.getSimpleName();
+
+    private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
 
     private static View view;
 
@@ -89,6 +101,11 @@ public class ParkingStationMapFragment extends Fragment
     TextView distance;
     TextView availableBicycles;
     TextView totalBicycles;
+
+    Location mLastLocation = null;
+    LatLng lastLocation;
+
+    private boolean isSearchClicked = false;
 
     android.support.v7.widget.CardView cardView;
 
@@ -109,6 +126,11 @@ public class ParkingStationMapFragment extends Fragment
         // Required empty public constructor
     }
 
+    private void handleNewLocation(Location location) {
+        Log.d(TAG, location.toString());
+        mLastLocation = location;
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -118,9 +140,55 @@ public class ParkingStationMapFragment extends Fragment
                 .Builder(context)
                 .addApi(Places.GEO_DATA_API)
                 .addApi(Places.PLACE_DETECTION_API)
+                .addApi(LocationServices.API)
+                .addConnectionCallbacks(this)
                 .build();
 
         MapsInitializer.initialize(context);
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        if (connectionResult.hasResolution()) {
+            try {
+                // Start an Activity that tries to resolve the error
+                connectionResult.startResolutionForResult(context, CONNECTION_FAILURE_RESOLUTION_REQUEST);
+            } catch (IntentSender.SendIntentException e) {
+                e.printStackTrace();
+            }
+        } else {
+            Log.i(TAG, "Location services connection failed with code " + connectionResult.getErrorCode());
+        }
+    }
+
+    @Override
+    public void onConnected(Bundle connectionHint) {
+
+        Log.i(TAG, "Location services connected.");
+        if ( ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_COARSE_LOCATION ) == PackageManager.PERMISSION_GRANTED )
+        {
+            mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+            if (mLastLocation == null) {
+
+            }
+            else {
+                handleNewLocation(mLastLocation);
+                lastLocation = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
+                GlobalVariable.setCurrentLocation(lastLocation);
+                if (mMap != null)
+                {
+                    cameraAction(lastLocation);
+                }
+
+                getNearestParkingStation(lastLocation, isSearchClicked);
+            };
+            return;
+        }
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.i(TAG, "Location services suspended. Please reconnect.");
     }
 
     @Override
@@ -174,15 +242,12 @@ public class ParkingStationMapFragment extends Fragment
             autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
                 @Override
                 public void onPlaceSelected(Place place) {
-                    searchLocation = place.getLatLng();
+                    lastLocation = place.getLatLng();
                     String placeName = String.valueOf(place.getName());
 
-                    cameraAction(searchLocation);
-
-                    mMap.addMarker(new MarkerOptions()
-                            .position(searchLocation)
-                            .title(placeName)
-                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET)));
+                    cameraAction(lastLocation);
+                    isSearchClicked = true;
+                    getNearestParkingStation(lastLocation, isSearchClicked);
                 }
 
                 @Override
@@ -201,6 +266,7 @@ public class ParkingStationMapFragment extends Fragment
     public void onPause() {
         super.onPause();
         mMapView.onPause();
+        isSearchClicked = false;
     }
 
     @Override
@@ -246,7 +312,7 @@ public class ParkingStationMapFragment extends Fragment
             public boolean onMarkerClick(Marker marker) {
                 isClickedOnMarker = true;
                 setSelectedStationIndex(marker.getPosition());
-                displayStationInMap();
+                displayStationInMap(lastLocation, isSearchClicked);
                 showDetailInfo();
                 return false;
             }
@@ -259,6 +325,7 @@ public class ParkingStationMapFragment extends Fragment
                 {
                     isClickedOnMarker = false;
                     cardView.setVisibility(View.INVISIBLE);
+                    displayStationInMap(lastLocation, isSearchClicked);
                 }
             }
         });
@@ -285,21 +352,30 @@ public class ParkingStationMapFragment extends Fragment
                     cameraAction(location);
                     //- Move camera to current device location
 
+                    isSearchClicked = false;
+                    getNearestParkingStation(location, isSearchClicked);
+
                     GlobalVariable.setCurrentLocation(location);
-
-                    getNearestParkingStation(location);
-
                     return true;
                 }
             });
 
-            // Add a marker in Singapore and move the camera
-            LatLng SINGAPORE = new LatLng(1.290270, 103.851959);
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(SINGAPORE));
+            if (mLastLocation == null)
+            {
+                // Add a marker in Singapore and move the camera
+                LatLng SINGAPORE = new LatLng(1.290270, 103.851959);
+                mMap.moveCamera(CameraUpdateFactory.newLatLng(SINGAPORE));
+            }
+            else
+            {
+                lastLocation = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
+                cameraAction(lastLocation);
+                getNearestParkingStation(lastLocation, isSearchClicked);
+            }
         }
     }
 
-    private void displayStationInMap()
+    private void displayStationInMap(LatLng location, boolean myLocation)
     {
         mMap.clear();
 
@@ -311,7 +387,7 @@ public class ParkingStationMapFragment extends Fragment
             {
                 mMap.addMarker(new MarkerOptions()
                         .position(station.getLocation())
-                        .icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_selection_bike_station)));
+                        .icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_out_of_order_station)));
             }
             else
             {
@@ -319,7 +395,7 @@ public class ParkingStationMapFragment extends Fragment
                 {
                     mMap.addMarker(new MarkerOptions()
                             .position(station.getLocation())
-                            .icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_out_of_order_station)));
+                            .icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_not_available_bicycle)));
                 }
                 else
                 {
@@ -328,6 +404,13 @@ public class ParkingStationMapFragment extends Fragment
                             .icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_available_station)));
                 }
             }
+        }
+
+        if (myLocation == true)
+        {
+            mMap.addMarker(new MarkerOptions()
+                    .position(lastLocation)
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET)));
         }
     }
 
@@ -367,7 +450,7 @@ public class ParkingStationMapFragment extends Fragment
         nearestParkingStations = new ArrayList<>(size);
     }
 
-    private void getNearestParkingStation(LatLng location)
+    private void getNearestParkingStation(final LatLng location, final boolean myLocation)
     {
         Preferences.showLoading(context, "Parking Station", "Getting nearest parking station...");
 
@@ -422,7 +505,7 @@ public class ParkingStationMapFragment extends Fragment
                                 nearestParkingStations.add(stationInfo);
                             }
 
-                            displayStationInMap();
+                            displayStationInMap(location, myLocation);
                         }
                         else
                         {

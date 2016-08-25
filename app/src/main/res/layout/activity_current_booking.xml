@@ -36,7 +36,7 @@
         android:text="@string/bicycle"
         android:textSize="16dp"
         android:layout_marginLeft="10dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="5dp"
         android:layout_below="@+id/booking_id_detail"/>
 
     <TextView
@@ -46,7 +46,7 @@
         android:textSize="20dp"
         android:text="@string/bicycle_brand"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="15dp"
+        android:layout_marginTop="10dp"
         android:layout_below="@+id/bicycle"/>
 
     <TextView
@@ -57,7 +57,7 @@
         android:textSize="24dp"
         android:textColor="@color/wallet_bright_foreground_holo_light"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="5dp"
         android:layout_below="@+id/bicycle_brand"/>
 
     <TextView
@@ -66,7 +66,7 @@
         android:id="@+id/bicycle_feature_1"
         android:text="@string/bicycle_feature_1"
         android:textSize="18dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="15dp"
         android:layout_marginLeft="30dp"
         android:layout_below="@+id/bicycle_brand_detail"/>
 
@@ -89,28 +89,28 @@
         android:orientation="horizontal">
 
         <ImageView
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:id="@+id/image_1"
-            android:background="@mipmap/ic_available_station"
+            android:background="@drawable/no_image"
             android:layout_alignParentTop="true"
-            android:layout_centerHorizontal="true" />\
+            android:layout_toStartOf="@+id/image_2" />
 
         <ImageView
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:id="@+id/image_2"
-            android:background="@mipmap/ic_available_station"
+            android:background="@drawable/no_image"
             android:layout_alignParentTop="true"
-            android:layout_toStartOf="@+id/image_1" />
+            android:layout_centerHorizontal="true"/>
 
         <ImageView
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:id="@+id/image_3"
-            android:background="@mipmap/ic_available_station"
+            android:background="@drawable/no_image"
             android:layout_alignParentTop="true"
-            android:layout_toEndOf="@+id/image_1" />\
+            android:layout_toEndOf="@+id/image_2" />
 
     </RelativeLayout>
 

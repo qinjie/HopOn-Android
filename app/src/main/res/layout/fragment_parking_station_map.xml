@@ -36,6 +36,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
+            android:layout_marginBottom="50dp"
             android:layout_centerVertical="true"
             android:visibility="invisible"
             card_view:cardCornerRadius="10dp"

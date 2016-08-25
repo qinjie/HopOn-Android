@@ -2,19 +2,32 @@ package com.example.sonata.hop_on.BicycleBooking;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.ImageSwitcher;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ViewSwitcher;
 
 import com.example.sonata.hop_on.GlobalVariable.GlobalVariable;
 import com.example.sonata.hop_on.LogIn.LogInActivity;
 import com.example.sonata.hop_on.NavigationDrawer.NavigationDrawerActivity;
 import com.example.sonata.hop_on.Notification.Notification;
+import com.example.sonata.hop_on.OnSwipeTouchListener;
 import com.example.sonata.hop_on.ParkingStation.ParkingStationClass;
 import com.example.sonata.hop_on.Preferences;
 import com.example.sonata.hop_on.R;
@@ -26,6 +39,9 @@ import com.google.gson.JsonObject;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.InputStream;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 
@@ -77,12 +93,21 @@ public class BookingActivity extends AppCompatActivity {
                             String availabelNumber = bicycle.getString("availableBicycle");
                             String totalNumber = bicycle.getString("totalBicycle");
 
+                            JSONArray imageUrl = new JSONArray(bicycle.getString("listImageUrl"));
+                            ArrayList<String> listImageUrl = new ArrayList<String>(imageUrl.length());
+                            for(int j = 0; j < imageUrl.length(); j++)
+                            {
+                                String url = imageUrl.getString(j);
+                                listImageUrl.add(url);
+                            }
+
                             BicycleInformationClass bicycleInfo = new BicycleInformationClass(
                                     bicycleId,
                                     bicycleBrand,
                                     bicycleMode,
                                     availabelNumber,
-                                    totalNumber
+                                    totalNumber,
+                                    listImageUrl
                             );
 
                             selectedParkingStationInfo.add(bicycleInfo);
@@ -193,6 +218,7 @@ public class BookingActivity extends AppCompatActivity {
                     {
                         GlobalVariable.bookingMessage = true;
                         GlobalVariable.setBookingStatusInSP(BookingActivity.this, GlobalVariable.BOOKED);
+                        GlobalVariable.setBicycleStatusInSP(BookingActivity.this, GlobalVariable.LOCKED);
 
                         Intent intent = new Intent(BookingActivity.this, CurrentBookingActivity.class);
                         startActivity(intent);
@@ -224,6 +250,57 @@ public class BookingActivity extends AppCompatActivity {
 
         TextView station_status = (TextView) findViewById((R.id.status_station));
         station_status.setText(bicycle.getAvailabelNumber() + "/" + bicycle.getTotalNumber());
+
+        ImageView imageView_1 = (ImageView) findViewById(R.id.image_1);
+        if (bicycle.listImageUrl.size() > 0)
+        {
+            setImageFromUrl(bicycle.listImageUrl.get(0), imageView_1);
+        }
+
+        ImageView imageView_2 = (ImageView) findViewById(R.id.image_2);
+        if (bicycle.listImageUrl.size() > 1)
+        {
+            setImageFromUrl(bicycle.listImageUrl.get(1), imageView_2);
+        }
+    }
+
+    private void setImageFromUrl(String _url, ImageView imageView)
+    {
+        try
+        {
+            new DownloadImageTask(imageView)
+                .execute(_url);
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+
+    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
+        ImageView bmImage;
+
+        public DownloadImageTask(ImageView bmImage) {
+            this.bmImage = bmImage;
+        }
+
+        protected Bitmap doInBackground(String... urls) {
+            String urldisplay = urls[0];
+            Bitmap mIcon11 = null;
+            try {
+                InputStream in = new java.net.URL(urldisplay).openStream();
+                mIcon11 = BitmapFactory.decodeStream(in);
+
+            } catch (Exception e) {
+                Log.e("Error", e.getMessage());
+                e.printStackTrace();
+            }
+            return mIcon11;
+        }
+
+        protected void onPostExecute(Bitmap result) {
+            bmImage.setImageBitmap(result);
+        }
     }
 
     private void renewParkingStationInfo(int size)

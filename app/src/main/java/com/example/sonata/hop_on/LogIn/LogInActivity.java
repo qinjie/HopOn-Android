@@ -166,13 +166,14 @@ public class LogInActivity extends AppCompatActivity {
                         GlobalVariable.setUserName(data.getString("fullname"));
 
                         SharedPreferences pref = getSharedPreferences("HopOn_pref", 0);
+
                         String bookingStatus = pref.getString("bookingStatus", null);
                         if (bookingStatus == null)
                         {
                             GlobalVariable.setBookingStatusInSP(LogInActivity.this, GlobalVariable.FREE);
-                            bookingStatus = pref.getString("bookingStatus", null);
                         }
 
+                        bookingStatus = pref.getString("bookingStatus", null);
                         if (bookingStatus.compareTo(GlobalVariable.FREE) == 0)
                         {
                             Intent intent = new Intent(LogInActivity.this, NavigationDrawerActivity.class);

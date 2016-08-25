@@ -2,13 +2,17 @@ package com.example.sonata.hop_on.BicycleBooking;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,68 +21,414 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.sonata.hop_on.BeaconService.BeaconScanningService;
+import com.example.sonata.hop_on.Feedback.FeedbackActivity;
 import com.example.sonata.hop_on.GlobalVariable.GlobalVariable;
+import com.example.sonata.hop_on.NavigationDrawer.NavigationDrawerActivity;
 import com.example.sonata.hop_on.Notification.Notification;
 import com.example.sonata.hop_on.Preferences;
 import com.example.sonata.hop_on.R;
 import com.example.sonata.hop_on.ServiceGenerator.ServiceGenerator;
 import com.example.sonata.hop_on.ServiceGenerator.StringClient;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
+import org.altbeacon.beacon.Beacon;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class CurrentBookingActivity extends AppCompatActivity {
+public class CurrentBookingActivity extends AppCompatActivity
+        implements
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener,
+        com.google.android.gms.location.LocationListener {
+
+    public static final String TAG = CurrentBookingActivity.class.getSimpleName();
+
+    private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
+
+    private GoogleApiClient mGoogleApiClient;
 
     private BookingInformationClass bookingInfo;
     private Button btn_return, btn_unlock;
     private Activity activity = this;
 
+    private static int status = 0;
+    private static boolean isValidPickUpTime = false;
+
+    Location mLastLocation = null;
+    private LocationRequest mLocationRequest;
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        if (connectionResult.hasResolution()) {
+            try {
+                // Start an Activity that tries to resolve the error
+                connectionResult.startResolutionForResult(this, CONNECTION_FAILURE_RESOLUTION_REQUEST);
+            } catch (IntentSender.SendIntentException e) {
+                e.printStackTrace();
+            }
+        } else {
+            Log.i(TAG, "Location services connection failed with code " + connectionResult.getErrorCode());
+        }
+    }
+
+    @Override
+    public void onConnected(Bundle connectionHint) {
+
+        Log.i(TAG, "Location services connected.");
+        if ( ContextCompat.checkSelfPermission( this, android.Manifest.permission.ACCESS_COARSE_LOCATION ) == PackageManager.PERMISSION_GRANTED )
+        {
+            mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+            if (mLastLocation == null) {
+                LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+            }
+            else {
+                handleNewLocation(mLastLocation);
+            };
+            return;
+        }
+    }
+
+    private void handleNewLocation(Location location) {
+        Log.d(TAG, location.toString());
+        mLastLocation = location;
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        handleNewLocation(location);
+    }
+
     private BroadcastReceiver mBeaconServiceReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(final Context context, Intent intent) {
+            Preferences.dismissLoading();
             String type = intent.getStringExtra("type");
             if(type.equalsIgnoreCase("Return")) {
-                Toast.makeText(getBaseContext(), "OK to Return", Toast.LENGTH_SHORT).show();
-            }else {
-                Toast.makeText(getBaseContext(), "OK to Unlock", Toast.LENGTH_SHORT).show();
+                sendReturnRequestToServer();
+            }else if(type.equalsIgnoreCase("Unlock")) {
+                Toast.makeText(getBaseContext(), "Scan device successfully", Toast.LENGTH_SHORT).show();
+                if (status == 0) {
+                    requestUnlockBicycle();
+                }
+                else if (status == 1)
+                {
+                    requestLockBicycle();
+                }
+
+            }else{
+                Toast.makeText(getBaseContext(), "Failed to scan beacon.", Toast.LENGTH_SHORT).show();
             }
         }
     };
+
+    private void requestUnlockBicycle()
+    {
+        Preferences.showLoading(this, "Unlocking bicycle", "Sending request to server...");
+
+        SharedPreferences pref = getSharedPreferences("HopOn_pref", 0);
+        String auCode = pref.getString("authorizationCode", null);
+
+        StringClient client = ServiceGenerator.createService(StringClient.class, auCode);
+
+        JsonObject unlockInfo = new JsonObject();
+        try
+        {
+            unlockInfo.addProperty("bicycleId", bookingInfo.bicycle_id);
+
+            if (mLastLocation == null)
+            {
+                Toast.makeText(getBaseContext(), "There is no current location", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            String latitude = String.valueOf(mLastLocation.getLatitude());
+            unlockInfo.addProperty("latitude", latitude);
+
+            String longitude = String.valueOf(mLastLocation.getLongitude());
+            unlockInfo.addProperty("longitude", longitude);
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        Call<ResponseBody> call = client.bicycleUnlock(unlockInfo);
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                try{
+                    Preferences.dismissLoading();
+                    int messageCode = response.code();
+
+                    if (messageCode == 200)
+                    {
+                        JSONObject data = new JSONObject(response.body().string());
+                        Toast.makeText(getBaseContext(), "Unlock successfully!", Toast.LENGTH_LONG).show();
+                        status = 1 - status;
+                        btn_unlock.setText("LOCK");
+                        GlobalVariable.setBicycleStatusInSP(CurrentBookingActivity.this, GlobalVariable.UNLOCKED);
+
+                        String pickUpTime = data.getString("pickup_at");
+                        if (isValidPickUpTime == false)
+                        {
+                            if (pickUpTime.compareToIgnoreCase("null") != 0)
+                            {
+                                TextView pickUpText = (TextView) findViewById(R.id.pick_up_time_detail);
+                                pickUpText.setText(pickUpTime);
+                            }
+                        }
+                    }
+                    else if (messageCode == 400)
+                    {
+                        Toast.makeText(getBaseContext(), "Invalid data!", Toast.LENGTH_LONG).show();
+                    }
+                }
+                catch(Exception e){
+
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+            }
+        });
+    }
+
+    private void requestLockBicycle()
+    {
+        Preferences.showLoading(this, "Locking bicycle", "Sending request to server...");
+
+        SharedPreferences pref = getSharedPreferences("HopOn_pref", 0);
+        String auCode = pref.getString("authorizationCode", null);
+
+        StringClient client = ServiceGenerator.createService(StringClient.class, auCode);
+
+        JsonObject lockInfo = new JsonObject();
+        try
+        {
+            lockInfo.addProperty("bicycleId", bookingInfo.bicycle_id);
+
+            if (mLastLocation == null)
+            {
+                Toast.makeText(getBaseContext(), "There is no current location", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            String latitude = String.valueOf(mLastLocation.getLatitude());
+            lockInfo.addProperty("latitude", latitude);
+
+            String longitude = String.valueOf(mLastLocation.getLongitude());
+            lockInfo.addProperty("longitude", longitude);
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        Call<ResponseBody> call = client.bicycleLock(lockInfo);
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                try{
+                    Preferences.dismissLoading();
+                    int messageCode = response.code();
+                    if (messageCode == 200)
+                    {
+                        Toast.makeText(getBaseContext(), "Lock successfully!", Toast.LENGTH_LONG).show();
+                        status = 1 - status;
+                        btn_unlock.setText("UNLOCK");
+                        GlobalVariable.setBicycleStatusInSP(CurrentBookingActivity.this, GlobalVariable.LOCKED);
+                    }
+                    else if (messageCode == 400)
+                    {
+                        Toast.makeText(getBaseContext(), "Invalid data!", Toast.LENGTH_LONG).show();
+                    }
+                }
+                catch(Exception e){
+
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+            }
+        });
+    }
+
+    private void sendReturnRequestToServer()
+    {
+        Preferences.showLoading(this, "Returning", "Sending request to server...");
+
+        SharedPreferences pref = getSharedPreferences("HopOn_pref", 0);
+        String auCode = pref.getString("authorizationCode", null);
+
+        StringClient client = ServiceGenerator.createService(StringClient.class, auCode);
+
+        JsonObject returnInfo = new JsonObject();
+        try
+        {
+            returnInfo.addProperty("bicycleId", bookingInfo.bicycle_id);
+
+            if (mLastLocation == null)
+            {
+                Toast.makeText(getBaseContext(), "There is no current location", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            String latitude = String.valueOf(mLastLocation.getLatitude());
+            returnInfo.addProperty("latitude", latitude);
+
+            String longitude = String.valueOf(mLastLocation.getLongitude());
+            returnInfo.addProperty("longitude", longitude);
+
+            JsonArray beaconList = new JsonArray();
+
+            for(int i = 0; i < GlobalVariable.beaconArrayList.size(); i++)
+            {
+                Beacon beacon = GlobalVariable.beaconArrayList.get(i);
+                JsonObject beaconInfo = new JsonObject();
+
+                beaconInfo.addProperty("uuid", beacon.getId1().toString().toUpperCase());
+                beaconInfo.addProperty("major", beacon.getId2().toString());
+                beaconInfo.addProperty("minor", beacon.getId3().toString());
+
+                beaconList.add(beaconInfo);
+            }
+
+            returnInfo.add("listBeacons", beaconList);
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        Call<ResponseBody> call = client.bicycleReturning(returnInfo);
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                try{
+                    Preferences.dismissLoading();
+                    int messageCode = response.code();
+
+                    if (messageCode == 200)
+                    {
+                        GlobalVariable.bookingMessage = false;
+                        GlobalVariable.setBookingStatusInSP(CurrentBookingActivity.this, GlobalVariable.FREE);
+
+                        GlobalVariable.selectedParkingStation = null;
+                        GlobalVariable.selectedBicycle = null;
+
+                        Toast.makeText(getBaseContext(), "Return successfully!", Toast.LENGTH_LONG).show();
+
+                        Intent intent = new Intent(CurrentBookingActivity.this, FeedbackActivity.class);
+                        startActivity(intent);
+                    }
+                    else if (messageCode == 400)
+                    {
+                        Toast.makeText(getBaseContext(), "Invalid data!", Toast.LENGTH_LONG).show();
+                    }
+                }
+                catch(Exception e){
+
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+            }
+        });
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_current_booking);
 
-        btn_return = (Button) findViewById(R.id.btn_return);
-//        btn_return.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                GlobalVariable.setBookingStatusInSP(CurrentBookingActivity.this, GlobalVariable.FREE);
-//
-//            }
-//        });
+        this.setTitle("Current Booking");
 
+        btn_return = (Button) findViewById(R.id.btn_return);
         btn_unlock = (Button) findViewById(R.id.button_unlock);
 
-        this.setTitle("Current Booking");
+        SharedPreferences pref = getSharedPreferences("HopOn_pref", 0);
+        String bicycleStatus = pref.getString("bicycleStatus", null);
+
+        if (bicycleStatus == null)
+        {
+            GlobalVariable.setBicycleStatusInSP(CurrentBookingActivity.this, GlobalVariable.LOCKED);
+        }
+
+        if (bicycleStatus.compareTo(GlobalVariable.LOCKED) == 0)
+        {
+            btn_unlock.setText("UNLOCK");
+            status = 0;
+        }
+        else
+        {
+            btn_unlock.setText("LOCK");
+            status = 1;
+        }
 
         getCurrentBookingInformation();
 
-        //TODO Start mornitoring beacon
-        //TODO When EnterRegion, start ranging
-        //TODO When beacon_station and beacon_bicycyle in range, enable return button
-        //TODO When beacon_bicycle in range, enable unlock/lock button
+        // Create an instance of GoogleAPIClient.
+        if (mGoogleApiClient == null) {
+            mGoogleApiClient = new GoogleApiClient.Builder(this)
+                    .addConnectionCallbacks(this)
+                    .addApi(LocationServices.API)
+                    .build();
+        }
 
+        // Create the LocationRequest object
+        mLocationRequest = LocationRequest.create()
+                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                .setInterval(10 * 1000)        // 10 seconds, in milliseconds
+                .setFastestInterval(1 * 1000); // 1 second, in milliseconds
+    }
 
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.i(TAG, "Location services suspended. Please reconnect.");
+    }
+
+    @Override
+    protected void onStart() {
+        mGoogleApiClient.connect();
+        super.onStart();
+    }
+
+    @Override
+    protected void onStop() {
+        mGoogleApiClient.disconnect();
+        super.onStop();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (mGoogleApiClient.isConnected()) {
+            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+            mGoogleApiClient.disconnect();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mGoogleApiClient.connect();
     }
 
     private void getCurrentBookingInformation()
@@ -115,6 +465,7 @@ public class CurrentBookingActivity extends AppCompatActivity {
                                 arrayList.add(bookingInfo.beacon_station_major);
                                 arrayList.add(bookingInfo.beacon_station_minor);
                                 intent.putStringArrayListExtra("arrayList", arrayList);
+                                Preferences.showLoading(activity, "Checking Beacon", "Scanning device...");
                                 activity.startService(intent);
 
                             }
@@ -129,6 +480,13 @@ public class CurrentBookingActivity extends AppCompatActivity {
                                 arrayList.add(bookingInfo.beacon_bicycle_major);
                                 arrayList.add(bookingInfo.beacon_bicycle_minor);
                                 intent.putStringArrayListExtra("arrayList", arrayList);
+                                if (status == 0) {
+                                    Preferences.showLoading(activity, "Unlocking bicycle", "Scanning device...");
+                                }
+                                else if (status == 1)
+                                {
+                                    Preferences.showLoading(activity, "Locking bicycle", "Scanning device...");
+                                }
                                 activity.startService(intent);
                             }
                         });
@@ -161,6 +519,7 @@ public class CurrentBookingActivity extends AppCompatActivity {
         try
         {
             bookingInfo = new BookingInformationClass(data);
+            GlobalVariable.setCurrentBookingInfo(bookingInfo);
 
             TextView bookingIdText = (TextView) findViewById(R.id.booking_id_detail);
             bookingIdText.setText(bookingInfo.getBooking_id());
@@ -177,6 +536,12 @@ public class CurrentBookingActivity extends AppCompatActivity {
             TextView pickUpTimeText = (TextView) findViewById(R.id.pick_up_time_detail);
             pickUpTimeText.setText(bookingInfo.getPickUpTime());
 
+            String pickUpTime = bookingInfo.getPickUpTime();
+            if (pickUpTime.compareToIgnoreCase("null") != 0)
+            {
+                isValidPickUpTime = true;
+            }
+
             if (GlobalVariable.bookingMessage == true)
             {
                 Toast.makeText(CurrentBookingActivity.this, "Booking successfully!", Toast.LENGTH_LONG);
@@ -187,7 +552,6 @@ public class CurrentBookingActivity extends AppCompatActivity {
         {
             e.printStackTrace();
         }
-
     }
 
     @Override
@@ -208,10 +572,13 @@ public class CurrentBookingActivity extends AppCompatActivity {
         switch (id) {
             case android.R.id.home:
                 // app icon in action bar clicked; goto parent activity.
-                this.finish();
+                Intent intent = new Intent(CurrentBookingActivity.this, NavigationDrawerActivity.class);
+                startActivity(intent);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 }
+
+

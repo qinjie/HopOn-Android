@@ -43,20 +43,33 @@ public interface StringClient {
     @POST("user/change-password")
     Call<ResponseBody> changePassword(@Body JsonObject toUp);
 
+    @POST("user/change-email")
+    Call<ResponseBody> changeEmail(@Body JsonObject toUp);
+
     @POST("station/search")
     Call<ResponseBody> getNearestParkingStations(@Body JsonObject loc);
+
+    @POST("bicycle/lock")
+    Call<ResponseBody> bicycleLock(@Body JsonObject bicycleInfo);
+
+    @POST("bicycle/unlock")
+    Call<ResponseBody> bicycleUnlock(@Body JsonObject bicycleInfo);
 
     @POST("bicycle/book")
     Call<ResponseBody> bicycleBooking(@Body JsonObject bookingInfo);
 
     @POST("bicycle/return")
-    Call<ResponseBody> bicycleReturning();
+    Call<ResponseBody> bicycleReturning(@Body JsonObject returningInfo);
 
     @POST("rental/history")
     Call<ResponseBody> getBookingHistory();
 
     @POST("rental/current-booking")
     Call<ResponseBody> getCurrentBookingInformation();
+
+    @POST("feedback/new")
+    Call<ResponseBody> getFeedback(@Body JsonObject feedback);
+
 
 
 }

@@ -57,7 +57,7 @@ public class CustomParkingStationAdapter extends RecyclerView.Adapter<CustomPark
     public void onBindViewHolder(final MyViewHolder holder, final int listPosition) {
 
 
-        TextView _textViewPKName             = holder.textViewPKAddress;
+        TextView _textViewPKName             = holder.textViewPKName;
         TextView _textViewPKAvailableBicycle = holder.textViewPKAvailableBicycle;
         TextView _textViewPKTotalBicycle     = holder.textViewPKTotalBicycle;
         TextView _textViewPKAddress          = holder.textViewPKAddress;

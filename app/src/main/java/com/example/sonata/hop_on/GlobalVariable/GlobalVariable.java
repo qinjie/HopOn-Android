@@ -14,10 +14,9 @@ import com.example.sonata.hop_on.ServiceGenerator.ServiceGenerator;
 import com.example.sonata.hop_on.ServiceGenerator.StringClient;
 import com.google.android.gms.maps.model.LatLng;
 
-import org.json.JSONObject;
+import org.altbeacon.beacon.Beacon;
 
 import java.util.ArrayList;
-import java.util.Vector;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -34,11 +33,15 @@ public class GlobalVariable {
     public static final String FREE   = "0";
     public static final String BOOKED = "1";
 
+    public static final String LOCKED = "2";
+    public static final String UNLOCKED = "3";
+
+
     public static String userName;
 
     public static Activity activity;
 
-    public static LatLng currentLocation;
+    public static LatLng userLocation;
 
     public static ParkingStationClass selectedParkingStation = null;
 
@@ -46,7 +49,26 @@ public class GlobalVariable {
 
     public static BookingInformationClass selectedLoanRecord = null;
 
+    public static BookingInformationClass currentBookingInfo = null;
+
+    public static ArrayList<Beacon> beaconArrayList = null;
+
     public static boolean bookingMessage = false;
+
+    public static void setCurrentBookingInfo(BookingInformationClass bookingInfo)
+    {
+        currentBookingInfo = bookingInfo;
+    }
+
+    public static void setBeaconArrayList(ArrayList<Beacon> beacons)
+    {
+        beaconArrayList = new ArrayList<>(beacons.size());
+
+        for(int i = 0; i < beacons.size(); i++)
+        {
+            beaconArrayList.add(beacons.get(i));
+        }
+    }
 
     public static void setSelectedLoanRecord(BookingInformationClass record)
     {
@@ -77,7 +99,7 @@ public class GlobalVariable {
 
     public static void setCurrentLocation(LatLng location)
     {
-        currentLocation = location;
+        userLocation = location;
     }
 
     public static void checkConnected(final Activity activity) {
@@ -138,6 +160,14 @@ public class GlobalVariable {
         SharedPreferences pref = activity.getSharedPreferences("HopOn_pref", 0);
         SharedPreferences.Editor editor = pref.edit();
         editor.putString("bookingStatus", status);
+        editor.apply();
+    }
+
+    public static void setBicycleStatusInSP(Activity activity, String status)
+    {
+        SharedPreferences pref = activity.getSharedPreferences("HopOn_pref", 0);
+        SharedPreferences.Editor editor = pref.edit();
+        editor.putString("bicycleStatus", status);
         editor.apply();
     }
 

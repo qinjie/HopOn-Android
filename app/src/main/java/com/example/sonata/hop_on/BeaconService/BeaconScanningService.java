@@ -7,6 +7,9 @@ import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.Nullable;
 
+import com.example.sonata.hop_on.GlobalVariable.GlobalVariable;
+import com.example.sonata.hop_on.Preferences;
+
 import org.altbeacon.beacon.Beacon;
 import org.altbeacon.beacon.BeaconConsumer;
 import org.altbeacon.beacon.BeaconManager;
@@ -35,6 +38,9 @@ public class BeaconScanningService extends Service implements BeaconConsumer{
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case 1:
+                    Intent intent = new Intent("OK_to_Return_or_Unlock");
+                    intent.putExtra("type", "Failed");
+                    sendBroadcast(intent);
                     stopSelf();
                     break;
                 default:
@@ -112,6 +118,8 @@ public class BeaconScanningService extends Service implements BeaconConsumer{
                 break;
         }
         if(cnt == arrayList.size()){
+            handler.removeMessages(1);
+            GlobalVariable.setBeaconArrayList(array);
             Intent intent = new Intent("OK_to_Return_or_Unlock");
             intent.putExtra("type", cnt == 6 ? "Return" : "Unlock");
             sendBroadcast(intent);

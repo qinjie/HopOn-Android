@@ -127,8 +127,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/book_now"
+            android:id="@+id/button_book"
+            android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
-            android:id="@+id/button_book" />
+            android:layout_marginTop="15dp" />
 
     </RelativeLayout>
 
@@ -138,16 +140,29 @@
         android:id="@+id/bicycle_image"
         android:layout_below="@id/button"
         android:layout_above="@+id/button_book_layout"
-        android:layout_marginTop="15dp"
-        android:orientation="horizontal">
+        android:layout_marginTop="15dp">
+
+        <View
+            android:layout_width="1dp"
+            android:id="@+id/view"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"/>
 
         <ImageView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/image"
-            android:background="@mipmap/ic_available_station"
-            android:layout_alignParentTop="true"
-            android:layout_centerHorizontal="true" />\
+            android:scaleType="centerInside"
+            android:id="@+id/image_1"
+            android:layout_alignLeft="@id/view" />
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerInside"
+            android:id="@+id/image_2"
+            android:layout_alignRight="@+id/view"/>
 
     </RelativeLayout>
 

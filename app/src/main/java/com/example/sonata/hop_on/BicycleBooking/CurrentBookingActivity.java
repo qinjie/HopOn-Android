@@ -35,11 +35,19 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.punchthrough.bean.sdk.Bean;
+import com.punchthrough.bean.sdk.BeanDiscoveryListener;
+import com.punchthrough.bean.sdk.BeanListener;
+import com.punchthrough.bean.sdk.BeanManager;
+import com.punchthrough.bean.sdk.message.BeanError;
+import com.punchthrough.bean.sdk.message.LedColor;
+import com.punchthrough.bean.sdk.message.ScratchBank;
 
 import org.altbeacon.beacon.Beacon;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -59,6 +67,7 @@ public class CurrentBookingActivity extends AppCompatActivity
     private GoogleApiClient mGoogleApiClient;
 
     private BookingInformationClass bookingInfo;
+
     private Button btn_return, btn_unlock;
     private Activity activity = this;
 
@@ -67,6 +76,8 @@ public class CurrentBookingActivity extends AppCompatActivity
 
     Location mLastLocation = null;
     private LocationRequest mLocationRequest;
+
+    Bean bean = null;
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
@@ -109,21 +120,122 @@ public class CurrentBookingActivity extends AppCompatActivity
         handleNewLocation(location);
     }
 
+    private void initBeans() {
+        final List<Bean> beans = new ArrayList<>();
+
+        BeanDiscoveryListener listener = new BeanDiscoveryListener() {
+            @Override
+            public void onBeanDiscovered(Bean bean, int rssi) {
+                beans.add(bean);
+            }
+
+            @Override
+            public void onDiscoveryComplete() {
+                // This is called when the scan times out, defined by the .setScanTimeout(int seconds) method
+
+                for (Bean bean : beans) {
+                    System.out.println(bean.getDevice().getName());   // "Bean"              (example)
+                    System.out.println(bean.getDevice().getAddress());    // "B4:99:4C:1E:BC:75" (example)
+                }
+
+                // Assume we have a reference to the 'beans' ArrayList from above.
+                System.out.println("list beancons " + beans.size());
+                bean = beans.get(0);
+
+                BeanListener beanListener = new BeanListener() {
+
+                    @Override
+                    public void onConnected() {
+                        System.out.println("connected.");
+                    }
+
+                    @Override
+                    public void onConnectionFailed() {
+                        System.out.println("onConnectionFailed");
+                    }
+
+                    @Override
+                    public void onDisconnected() {
+                        System.out.println("onDisconnected");
+                    }
+
+                    @Override
+                    public void onSerialMessageReceived(byte[] bytes) {
+
+                    }
+
+                    @Override
+                    public void onScratchValueChanged(ScratchBank scratchBank, byte[] bytes) {
+
+                    }
+
+                    @Override
+                    public void onError(BeanError beanError) {
+                        System.out.println("onError " + beanError);
+                    }
+
+                    @Override
+                    public void onReadRemoteRssi(int i) {
+
+                    }
+
+                };
+
+                // Assuming you are in an Activity, use 'this' for the context
+                bean.connect(CurrentBookingActivity.this, beanListener);
+            }
+        };
+
+        BeanManager.getInstance().setScanTimeout(15);  // Timeout in seconds, optional, default is 30 seconds
+        BeanManager.getInstance().startDiscovery(listener);
+    }
+
+    private void sendSerialMessage(String command)
+    {
+        String data = bookingInfo.enc + "," + bookingInfo.user_id + "," + command;
+        bean.sendSerialMessage(data);
+        bean.endSerialGate();
+    }
+
     private BroadcastReceiver mBeaconServiceReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(final Context context, Intent intent) {
             Preferences.dismissLoading();
             String type = intent.getStringExtra("type");
             if(type.equalsIgnoreCase("Return")) {
-                sendReturnRequestToServer();
+                if (bean != null)
+                {
+                    sendSerialMessage("2");
+                    sendReturnRequestToServer();
+                }
+                else
+                {
+                    Toast.makeText(getBaseContext(), "Can not scan bean", Toast.LENGTH_SHORT).show();
+                }
             }else if(type.equalsIgnoreCase("Unlock")) {
                 Toast.makeText(getBaseContext(), "Scan device successfully", Toast.LENGTH_SHORT).show();
                 if (status == 0) {
-                    requestUnlockBicycle();
+                    if (bean != null)
+                    {
+                        sendSerialMessage("0");
+                        requestUnlockBicycle();
+                    }
+                    else
+                    {
+                        Toast.makeText(getBaseContext(), "Can not scan bean", Toast.LENGTH_SHORT).show();
+                    }
                 }
                 else if (status == 1)
                 {
-                    requestLockBicycle();
+                    if (bean != null)
+                    {
+                        sendSerialMessage("1");
+                        requestLockBicycle();
+                    }
+                    else
+                    {
+                        Toast.makeText(getBaseContext(), "Can not scan bean", Toast.LENGTH_SHORT).show();
+                    }
                 }
 
             }else{
@@ -397,6 +509,8 @@ public class CurrentBookingActivity extends AppCompatActivity
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
                 .setInterval(10 * 1000)        // 10 seconds, in milliseconds
                 .setFastestInterval(1 * 1000); // 1 second, in milliseconds
+
+        initBeans();
     }
 
     @Override
@@ -522,7 +636,7 @@ public class CurrentBookingActivity extends AppCompatActivity
             GlobalVariable.setCurrentBookingInfo(bookingInfo);
 
             TextView bookingIdText = (TextView) findViewById(R.id.booking_id_detail);
-            bookingIdText.setText(bookingInfo.getBooking_id());
+            bookingIdText.setText(bookingInfo.getBicycleSerial());
 
             TextView bicycleBrandDetailText = (TextView) findViewById(R.id.bicycle_brand_detail);
             bicycleBrandDetailText.setText(bookingInfo.getBicycleInfo());

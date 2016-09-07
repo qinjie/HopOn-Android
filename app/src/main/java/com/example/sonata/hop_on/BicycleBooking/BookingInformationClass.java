@@ -43,6 +43,9 @@ public class BookingInformationClass {
 
     String duration;
 
+    String enc;
+    String user_id;
+
     public BookingInformationClass() {};
     public BookingInformationClass(JSONObject data)
     {
@@ -74,6 +77,8 @@ public class BookingInformationClass {
             beacon_bicycle_major = data.getString("beacon_bicycle_major");
             beacon_bicycle_minor = data.getString("beacon_bicycle_minor");
 
+            enc = data.getString("enc");
+            user_id = data.getString("user_id");
         }
         catch (Exception e)
         {
@@ -123,6 +128,7 @@ public class BookingInformationClass {
         }
     }
 
+    public String getBicycleSerial() { return bicycle_serial; }
     public String getBooking_id() { return booking_id; }
     public String getBicycleBrand() { return brand; }
     public String getBicycleInfo() { return brand + " / " + model; }

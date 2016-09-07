@@ -21,7 +21,10 @@ import com.example.sonata.hop_on.ServiceGenerator.ServiceGenerator;
 import com.example.sonata.hop_on.ServiceGenerator.StringClient;
 import com.example.sonata.hop_on.SignUp.SignUpActivity;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.net.URLDecoder;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -154,12 +157,11 @@ public class LogInActivity extends AppCompatActivity {
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 try {
                     Preferences.dismissLoading();
+                    JSONObject data = new JSONObject(URLDecoder.decode(response.body().string(), "UTF-8"));
                     int messageCode = response.code();
                     if (messageCode == 200) // SUCCESS
                     {
                         onLoginSuccess();
-                        JSONObject data = new JSONObject(response.body().string());
-
                         String authorizationCode = data.getString("token");
                         GlobalVariable.setAuCodeInSP(LogInActivity.this, authorizationCode);
 
@@ -190,7 +192,6 @@ public class LogInActivity extends AppCompatActivity {
                         onLoginFailed();
                         if (messageCode == 400) // BAD REQUEST HTTP
                         {
-                            JSONObject data = new JSONObject(response.errorBody().string());
                             int errorCode = data.getInt("code");
                             if (errorCode == 0 || errorCode == 1)
                             {

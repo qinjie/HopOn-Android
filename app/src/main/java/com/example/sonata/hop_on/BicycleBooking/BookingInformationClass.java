@@ -1,5 +1,7 @@
 package com.example.sonata.hop_on.BicycleBooking;
 
+import com.example.sonata.hop_on.ServiceGenerator.StringClient;
+
 import org.json.JSONObject;
 
 /**
@@ -133,6 +135,7 @@ public class BookingInformationClass {
     public String getBicycleBrand() { return brand; }
     public String getBicycleInfo() { return brand + " / " + model; }
 
+    public String getPickUpStationName() { return pickup_station_name; }
     public String getPickUpStationAddress() { return pickup_station_address; }
     public String getReturnStationAddress() { return return_station_address; }
 

@@ -128,6 +128,17 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:id="@+id/pick_up_station_name"
+        android:text="@string/pick_up_station_name"
+        android:textSize="16dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginRight="10dp"
+        android:layout_alignBaseline="@+id/pick_up_station"
+        android:layout_alignParentRight="true"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:id="@+id/pick_up_station_address"
         android:text="@string/pick_up_station_address"
         android:textSize="16dp"

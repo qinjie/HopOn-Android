@@ -40,7 +40,6 @@ import com.punchthrough.bean.sdk.BeanDiscoveryListener;
 import com.punchthrough.bean.sdk.BeanListener;
 import com.punchthrough.bean.sdk.BeanManager;
 import com.punchthrough.bean.sdk.message.BeanError;
-import com.punchthrough.bean.sdk.message.LedColor;
 import com.punchthrough.bean.sdk.message.ScratchBank;
 
 import org.altbeacon.beacon.Beacon;
@@ -125,22 +124,34 @@ public class CurrentBookingActivity extends AppCompatActivity
 
         BeanDiscoveryListener listener = new BeanDiscoveryListener() {
             @Override
-            public void onBeanDiscovered(Bean bean, int rssi) {
-                beans.add(bean);
+            public void onBeanDiscovered(Bean iBean, int rssi) {
+                beans.add(iBean);
+
+                try
+                {
+                    if (bookingInfo.getBicycleSerial().compareTo(iBean.getDevice().getName()) == 0)
+                    {
+                        Toast.makeText(getBaseContext(), "Bicycle in range!", Toast.LENGTH_LONG).show();
+                        bean = iBean;
+                    }
+                } catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
             }
 
             @Override
             public void onDiscoveryComplete() {
                 // This is called when the scan times out, defined by the .setScanTimeout(int seconds) method
 
-                for (Bean bean : beans) {
-                    System.out.println(bean.getDevice().getName());   // "Bean"              (example)
-                    System.out.println(bean.getDevice().getAddress());    // "B4:99:4C:1E:BC:75" (example)
+                for (Bean iBean : beans) {
+                    System.out.println(iBean.getDevice().getName());   // "Bean"              (example)
+                    System.out.println(iBean.getDevice().getAddress());    // "B4:99:4C:1E:BC:75" (example)
                 }
 
                 // Assume we have a reference to the 'beans' ArrayList from above.
                 System.out.println("list beancons " + beans.size());
-                bean = beans.get(0);
+
 
                 BeanListener beanListener = new BeanListener() {
 
@@ -178,11 +189,17 @@ public class CurrentBookingActivity extends AppCompatActivity
                     public void onReadRemoteRssi(int i) {
 
                     }
-
                 };
 
-                // Assuming you are in an Activity, use 'this' for the context
-                bean.connect(CurrentBookingActivity.this, beanListener);
+                if (bean == null)
+                {
+                    Toast.makeText(getBaseContext(), "Can not scan bean at the moment!", Toast.LENGTH_LONG).show();
+                }
+                else
+                {
+                    // Assuming you are in an Activity, use 'this' for the context
+                    bean.connect(CurrentBookingActivity.this, beanListener);
+                }
             }
         };
 
@@ -416,6 +433,7 @@ public class CurrentBookingActivity extends AppCompatActivity
                 beaconInfo.addProperty("uuid", beacon.getId1().toString().toUpperCase());
                 beaconInfo.addProperty("major", beacon.getId2().toString());
                 beaconInfo.addProperty("minor", beacon.getId3().toString());
+                beaconInfo.addProperty("rssi", beacon.getRssi());
 
                 beaconList.add(beaconInfo);
             }
@@ -636,10 +654,16 @@ public class CurrentBookingActivity extends AppCompatActivity
             GlobalVariable.setCurrentBookingInfo(bookingInfo);
 
             TextView bookingIdText = (TextView) findViewById(R.id.booking_id_detail);
-            bookingIdText.setText(bookingInfo.getBicycleSerial());
+            bookingIdText.setText(bookingInfo.getBooking_id());
+
+            TextView brandText = (TextView) findViewById(R.id.bicycle_brand);
+            brandText.setText(bookingInfo.getBicycleInfo());
 
             TextView bicycleBrandDetailText = (TextView) findViewById(R.id.bicycle_brand_detail);
-            bicycleBrandDetailText.setText(bookingInfo.getBicycleInfo());
+            bicycleBrandDetailText.setText(bookingInfo.getBicycleSerial());
+
+            TextView pickUpStationNameText = (TextView) findViewById(R.id.pick_up_station_name);
+            pickUpStationNameText.setText(bookingInfo.getPickUpStationName());
 
             TextView pickUpStationText = (TextView) findViewById(R.id.pick_up_station_address);
             pickUpStationText.setText(bookingInfo.getPickUpStationAddress());

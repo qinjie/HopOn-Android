@@ -79,6 +79,10 @@
     <string name="comment">Comment</string>
     <string name="submit">Submit</string>
 
+    <string name="pick_up_station_name">Ang Mo Kio</string>
+
+
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 

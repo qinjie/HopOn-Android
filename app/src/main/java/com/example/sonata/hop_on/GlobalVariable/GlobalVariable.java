@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 
-
 import com.example.sonata.hop_on.BicycleBooking.BicycleInformationClass;
 import com.example.sonata.hop_on.BicycleBooking.BookingInformationClass;
 import com.example.sonata.hop_on.LogIn.LogInActivity;
@@ -131,6 +130,15 @@ public class GlobalVariable {
 
             e.printStackTrace();
         }
+    }
+
+    public static boolean obtainedAuCode (Activity activity) {
+        SharedPreferences pref = activity.getSharedPreferences("HopOn_pref", 0);
+        String auCode = pref.getString("authorizationCode", null);
+        if (auCode != null && auCode != "{\"password\":[\"Incorrect username or password.\"]}"){
+            return true;
+        }
+        return false;
     }
 
     public static void logoutAction(Activity activity){

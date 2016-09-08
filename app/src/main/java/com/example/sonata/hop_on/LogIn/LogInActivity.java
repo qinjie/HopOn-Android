@@ -1,8 +1,11 @@
 package com.example.sonata.hop_on.LogIn;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.CountDownTimer;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -44,6 +47,8 @@ public class LogInActivity extends AppCompatActivity {
     @InjectView(R.id.link_forgotPass) TextView _forgotPassLink;
     @InjectView(R.id.link_signup)     TextView _signupLink;
 
+    private CountDownTimer timer;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,6 +59,30 @@ public class LogInActivity extends AppCompatActivity {
         GlobalVariable.activity = LogInActivity.this;
 
         GlobalVariable.checkConnected(LogInActivity.this);
+
+        this.setTitle("Log In");
+
+        if (GlobalVariable.obtainedAuCode(this)) {
+            SharedPreferences pref = getSharedPreferences("HopOn_pref", 0);
+
+            String bookingStatus = pref.getString("bookingStatus", null);
+            if (bookingStatus == null)
+            {
+                GlobalVariable.setBookingStatusInSP(LogInActivity.this, GlobalVariable.FREE);
+            }
+
+            bookingStatus = pref.getString("bookingStatus", null);
+            if (bookingStatus.compareTo(GlobalVariable.FREE) == 0)
+            {
+                Intent intent = new Intent(LogInActivity.this, NavigationDrawerActivity.class);
+                startActivity(intent);
+            }
+            else if (bookingStatus.compareTo(GlobalVariable.BOOKED) == 0)
+            {
+                Intent intent = new Intent(LogInActivity.this, CurrentBookingActivity.class);
+                startActivity(intent);
+            }
+        }
 
         _loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -92,8 +121,53 @@ public class LogInActivity extends AppCompatActivity {
 
         _loginButton.setEnabled(false);
 
-        String username = _usernameText.getText().toString();
-        String password = _passwordText.getText().toString();
+        final String username = _usernameText.getText().toString();
+        final String password = _passwordText.getText().toString();
+
+        timer = new CountDownTimer(15000, 20) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+
+            }
+
+            @Override
+            public void onFinish() {
+                try
+                {
+                    AlertDialog.Builder builder2 = new AlertDialog.Builder(LogInActivity.this);
+                    String message = "Server did not respond. Please check your internet connection." +
+                            "Do you want to retry?";
+                    builder2.setMessage(message);
+                    builder2.setCancelable(true);
+
+                    builder2.setPositiveButton(
+                            "RETRY",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    loginAction(username, password, LogInActivity.this);
+                                    dialog.cancel();
+                                }
+                            });
+
+                    builder2.setNegativeButton(
+                            "CANCEL",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    Preferences.dismissLoading();
+                                    dialog.cancel();
+                                }
+                            });
+
+                    AlertDialog alert12 = builder2.create();
+                    alert12.show();
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        };
+
 
         loginAction(username, password, this);
     }
@@ -147,6 +221,8 @@ public class LogInActivity extends AppCompatActivity {
     public void loginAction(String username, String password, final Activity activity) {
 
         Preferences.showLoading(this, "Log In", "Authenticating...");
+
+        timer.start();
 
         StringClient client = ServiceGenerator.createService(StringClient.class);
         LogInClass up = new LogInClass(username, password);

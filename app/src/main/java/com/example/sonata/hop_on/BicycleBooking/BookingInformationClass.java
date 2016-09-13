@@ -11,6 +11,7 @@ import org.json.JSONObject;
 public class BookingInformationClass {
     String booking_id;
     String bicycle_id;
+    String rental_id;
 
     String bicycle_serial;
     String desc;
@@ -43,6 +44,9 @@ public class BookingInformationClass {
     String return_station_lat;
     String return_station_lng;
 
+    String bean_bicycle_name;
+    String bean_bicycle_address;
+
     String duration;
 
     String enc;
@@ -55,6 +59,7 @@ public class BookingInformationClass {
         {
             booking_id = data.getString("booking_id");
             bicycle_id = data.getString("bicycle_id");
+            rental_id = data.getString("rental_id");
 
             bicycle_serial = data.getString("bicycle_serial");
             desc = data.getString("desc");
@@ -78,6 +83,9 @@ public class BookingInformationClass {
             beacon_bicycle_uuid = data.getString("beacon_bicycle_uuid");
             beacon_bicycle_major = data.getString("beacon_bicycle_major");
             beacon_bicycle_minor = data.getString("beacon_bicycle_minor");
+
+            bean_bicycle_name = data.getString("bean_bicycle_name");
+            bean_bicycle_address = data.getString("bean_bicycle_address");
 
             enc = data.getString("enc");
             user_id = data.getString("user_id");
@@ -130,7 +138,9 @@ public class BookingInformationClass {
         }
     }
 
+    public String getRentalId() { return rental_id; }
     public String getBicycleSerial() { return bicycle_serial; }
+    public String getBeanAddress() { return bean_bicycle_address; }
     public String getBooking_id() { return booking_id; }
     public String getBicycleBrand() { return brand; }
     public String getBicycleInfo() { return brand + " / " + model; }

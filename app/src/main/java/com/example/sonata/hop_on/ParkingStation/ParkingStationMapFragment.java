@@ -136,13 +136,30 @@ public class ParkingStationMapFragment extends Fragment
         super.onCreate(savedInstanceState);
         context = getActivity();
 
-         mGoogleApiClient = new GoogleApiClient
-                .Builder(context)
-                .addApi(Places.GEO_DATA_API)
-                .addApi(Places.PLACE_DETECTION_API)
-                .addApi(LocationServices.API)
-                .addConnectionCallbacks(this)
-                .build();
+        if (mGoogleApiClient == null)
+        {
+            mGoogleApiClient = new GoogleApiClient
+                    .Builder(context)
+                    .addApi(Places.GEO_DATA_API)
+                    .addApi(Places.PLACE_DETECTION_API)
+                    .addApi(LocationServices.API)
+                    .addConnectionCallbacks(this)
+                    .build();
+
+        }
+
+        if (mLastLocation != null)
+        {
+            handleNewLocation(mLastLocation);
+            lastLocation = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
+            GlobalVariable.setCurrentLocation(lastLocation);
+            if (mMap != null)
+            {
+                cameraAction(lastLocation);
+            }
+
+            getNearestParkingStation(lastLocation, isSearchClicked);
+        }
 
         MapsInitializer.initialize(context);
     }

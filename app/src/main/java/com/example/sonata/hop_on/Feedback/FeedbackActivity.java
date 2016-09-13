@@ -156,7 +156,7 @@ public class FeedbackActivity extends AppCompatActivity {
         JsonObject feedback = new JsonObject();
         try
         {
-            feedback.addProperty("rentalId", GlobalVariable.currentBookingInfo.getBooking_id());
+            feedback.addProperty("rentalId", GlobalVariable.currentBookingInfo.getRentalId());
 
             JsonArray listIssue = new JsonArray();
             for(int i = 0; i < 5; i++)

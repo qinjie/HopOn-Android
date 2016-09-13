@@ -76,7 +76,9 @@ public class CurrentBookingActivity extends AppCompatActivity
     Location mLastLocation = null;
     private LocationRequest mLocationRequest;
 
-    Bean bean = null;
+    private static BeanListener beanListener;
+
+    private static Bean bean = null;
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
@@ -127,12 +129,22 @@ public class CurrentBookingActivity extends AppCompatActivity
             public void onBeanDiscovered(Bean iBean, int rssi) {
                 beans.add(iBean);
 
+                Toast.makeText(getBaseContext(), iBean.getDevice().getName(), Toast.LENGTH_SHORT).show();
+
+                System.out.println(iBean.getDevice().getName());   // "Bean"              (example)
+                System.out.println(iBean.getDevice().getAddress());    // "B4:99:4C:1E:BC:75" (example)
+
                 try
                 {
-                    if (bookingInfo.getBicycleSerial().compareTo(iBean.getDevice().getName()) == 0)
+                    if (bookingInfo.getBeanAddress().compareTo(iBean.getDevice().getAddress()) == 0)
                     {
-                        Toast.makeText(getBaseContext(), "Bicycle in range!", Toast.LENGTH_LONG).show();
+                        String temp = "Found " + iBean.getDevice().getName() + " bean!";
+                        Toast.makeText(getBaseContext(), temp, Toast.LENGTH_SHORT).show();
+
                         bean = iBean;
+
+                        bean.connect(CurrentBookingActivity.this, beanListener);
+                        BeanManager.getInstance().cancelDiscovery();
                     }
                 } catch (Exception e)
                 {
@@ -149,69 +161,23 @@ public class CurrentBookingActivity extends AppCompatActivity
                     System.out.println(iBean.getDevice().getAddress());    // "B4:99:4C:1E:BC:75" (example)
                 }
 
+                Toast.makeText(getBaseContext(), "Finish scanning beans!", Toast.LENGTH_SHORT).show();
                 // Assume we have a reference to the 'beans' ArrayList from above.
                 System.out.println("list beancons " + beans.size());
-
-
-                BeanListener beanListener = new BeanListener() {
-
-                    @Override
-                    public void onConnected() {
-                        System.out.println("connected.");
-                    }
-
-                    @Override
-                    public void onConnectionFailed() {
-                        System.out.println("onConnectionFailed");
-                    }
-
-                    @Override
-                    public void onDisconnected() {
-                        System.out.println("onDisconnected");
-                    }
-
-                    @Override
-                    public void onSerialMessageReceived(byte[] bytes) {
-
-                    }
-
-                    @Override
-                    public void onScratchValueChanged(ScratchBank scratchBank, byte[] bytes) {
-
-                    }
-
-                    @Override
-                    public void onError(BeanError beanError) {
-                        System.out.println("onError " + beanError);
-                    }
-
-                    @Override
-                    public void onReadRemoteRssi(int i) {
-
-                    }
-                };
-
-                if (bean == null)
-                {
-                    Toast.makeText(getBaseContext(), "Can not scan bean at the moment!", Toast.LENGTH_LONG).show();
-                }
-                else
-                {
-                    // Assuming you are in an Activity, use 'this' for the context
-                    bean.connect(CurrentBookingActivity.this, beanListener);
-                }
             }
         };
 
-        BeanManager.getInstance().setScanTimeout(15);  // Timeout in seconds, optional, default is 30 seconds
+        BeanManager.getInstance().setScanTimeout(30);  // Timeout in seconds, optional, default is 30 seconds
         BeanManager.getInstance().startDiscovery(listener);
     }
 
     private void sendSerialMessage(String command)
     {
         String data = bookingInfo.enc + "," + bookingInfo.user_id + "," + command;
+
+        System.out.println("command data: " + data);
+
         bean.sendSerialMessage(data);
-        bean.endSerialGate();
     }
 
     private BroadcastReceiver mBeaconServiceReceiver = new BroadcastReceiver() {
@@ -454,6 +420,8 @@ public class CurrentBookingActivity extends AppCompatActivity
 
                     if (messageCode == 200)
                     {
+                        bean.disconnect();
+
                         GlobalVariable.bookingMessage = false;
                         GlobalVariable.setBookingStatusInSP(CurrentBookingActivity.this, GlobalVariable.FREE);
 
@@ -528,7 +496,43 @@ public class CurrentBookingActivity extends AppCompatActivity
                 .setInterval(10 * 1000)        // 10 seconds, in milliseconds
                 .setFastestInterval(1 * 1000); // 1 second, in milliseconds
 
-        initBeans();
+        beanListener = new BeanListener() {
+
+            @Override
+            public void onConnected() {
+                Toast.makeText(getBaseContext(), "Connected to bean!", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onConnectionFailed() {
+                Toast.makeText(getBaseContext(), "Connected failed to bean!", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onDisconnected() {
+                Toast.makeText(getBaseContext(), "Disconnect to bean!", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onSerialMessageReceived(byte[] bytes) {
+
+            }
+
+            @Override
+            public void onScratchValueChanged(ScratchBank scratchBank, byte[] bytes) {
+
+            }
+
+            @Override
+            public void onError(BeanError beanError) {
+                System.out.println("onError " + beanError);
+            }
+
+            @Override
+            public void onReadRemoteRssi(int i) {
+
+            }
+        };
     }
 
     @Override
@@ -546,6 +550,11 @@ public class CurrentBookingActivity extends AppCompatActivity
     protected void onStop() {
         mGoogleApiClient.disconnect();
         super.onStop();
+
+        if (bean != null && bean.isConnected())
+        {
+            bean.disconnect();
+        }
     }
 
     @Override
@@ -555,12 +564,23 @@ public class CurrentBookingActivity extends AppCompatActivity
             LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
             mGoogleApiClient.disconnect();
         }
+
+        if (bean != null && bean.isConnected())
+        {
+            bean.disconnect();
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         mGoogleApiClient.connect();
+
+        if (bean != null)
+        {
+            bean.connect(CurrentBookingActivity.this, beanListener);
+        }
+
     }
 
     private void getCurrentBookingInformation()
@@ -622,6 +642,8 @@ public class CurrentBookingActivity extends AppCompatActivity
                                 activity.startService(intent);
                             }
                         });
+
+                        initBeans();
                     }
                     else if (messageCode == 400)
                     {
@@ -630,11 +652,8 @@ public class CurrentBookingActivity extends AppCompatActivity
                     {
                         Notification.showMessage(CurrentBookingActivity.this, 1);
                     }
-
-
                 }
                 catch(Exception e){
-
                     e.printStackTrace();
                 }
             }

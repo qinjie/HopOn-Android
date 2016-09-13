@@ -124,7 +124,7 @@ public class LogInActivity extends AppCompatActivity {
         final String username = _usernameText.getText().toString();
         final String password = _passwordText.getText().toString();
 
-        timer = new CountDownTimer(15000, 20) {
+        timer = new CountDownTimer(30000, 20) {
             @Override
             public void onTick(long millisUntilFinished) {
 

@@ -63,6 +63,15 @@ public class ProfileFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
+        TextView userName = (TextView) view.findViewById(R.id.full_name);
+        userName.setText(GlobalVariable.getUserProfile().getUserName());
+
+        TextView userEmail = (TextView) view.findViewById(R.id.email);
+        userEmail.setText(GlobalVariable.getUserProfile().getUserEmail());
+
+        TextView userMobilePhone = (TextView) view.findViewById(R.id.phone);
+        userMobilePhone.setText(GlobalVariable.getUserProfile().getUserMobilePhone());
+
         TextView changePasswordText = (TextView) view.findViewById(R.id.change_password);
         changePasswordText.setOnClickListener(new View.OnClickListener() {
             @Override

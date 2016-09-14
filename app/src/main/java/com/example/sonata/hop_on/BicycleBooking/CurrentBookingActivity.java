@@ -45,6 +45,7 @@ import com.punchthrough.bean.sdk.message.ScratchBank;
 import org.altbeacon.beacon.Beacon;
 import org.json.JSONObject;
 
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -188,7 +189,6 @@ public class CurrentBookingActivity extends AppCompatActivity
             if(type.equalsIgnoreCase("Return")) {
                 if (bean != null)
                 {
-                    sendSerialMessage("2");
                     sendReturnRequestToServer();
                 }
                 else
@@ -200,7 +200,6 @@ public class CurrentBookingActivity extends AppCompatActivity
                 if (status == 0) {
                     if (bean != null)
                     {
-                        sendSerialMessage("0");
                         requestUnlockBicycle();
                     }
                     else
@@ -212,7 +211,6 @@ public class CurrentBookingActivity extends AppCompatActivity
                 {
                     if (bean != null)
                     {
-                        sendSerialMessage("1");
                         requestLockBicycle();
                     }
                     else
@@ -282,6 +280,8 @@ public class CurrentBookingActivity extends AppCompatActivity
                                 pickUpText.setText(pickUpTime);
                             }
                         }
+
+                        sendSerialMessage("0");
                     }
                     else if (messageCode == 400)
                     {
@@ -349,6 +349,8 @@ public class CurrentBookingActivity extends AppCompatActivity
                     {
                         Toast.makeText(getBaseContext(), "Invalid data!", Toast.LENGTH_LONG).show();
                     }
+
+                    sendSerialMessage("1");
                 }
                 catch(Exception e){
 
@@ -429,6 +431,8 @@ public class CurrentBookingActivity extends AppCompatActivity
                         GlobalVariable.selectedBicycle = null;
 
                         Toast.makeText(getBaseContext(), "Return successfully!", Toast.LENGTH_LONG).show();
+
+                        sendSerialMessage("2");
 
                         Intent intent = new Intent(CurrentBookingActivity.this, FeedbackActivity.class);
                         startActivity(intent);
@@ -599,7 +603,6 @@ public class CurrentBookingActivity extends AppCompatActivity
                 try{
                     Preferences.dismissLoading();
                     int messageCode = response.code();
-
                     if (messageCode == 200)
                     {
                         JSONObject data = new JSONObject(response.body().string());

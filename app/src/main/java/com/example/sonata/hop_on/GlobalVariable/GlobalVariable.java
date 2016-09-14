@@ -11,6 +11,7 @@ import com.example.sonata.hop_on.LogIn.LogInClass;
 import com.example.sonata.hop_on.ParkingStation.ParkingStationClass;
 import com.example.sonata.hop_on.ServiceGenerator.ServiceGenerator;
 import com.example.sonata.hop_on.ServiceGenerator.StringClient;
+import com.example.sonata.hop_on.UserProfile.UserProfile;
 import com.google.android.gms.maps.model.LatLng;
 
 import org.altbeacon.beacon.Beacon;
@@ -36,7 +37,7 @@ public class GlobalVariable {
     public static final String UNLOCKED = "3";
 
 
-    public static String userName;
+    public static UserProfile userProfile;
 
     public static Activity activity;
 
@@ -53,6 +54,16 @@ public class GlobalVariable {
     public static ArrayList<Beacon> beaconArrayList = null;
 
     public static boolean bookingMessage = false;
+
+    public static void setUserProfile(UserProfile _userProfile)
+    {
+        userProfile = _userProfile;
+    }
+
+    public static UserProfile getUserProfile()
+    {
+        return userProfile;
+    }
 
     public static void setCurrentBookingInfo(BookingInformationClass bookingInfo)
     {
@@ -177,16 +188,6 @@ public class GlobalVariable {
         SharedPreferences.Editor editor = pref.edit();
         editor.putString("bicycleStatus", status);
         editor.apply();
-    }
-
-    public static void setUserName(String _username)
-    {
-        userName = _username;
-    }
-
-    public static String getUserName()
-    {
-        return userName;
     }
 
     public static boolean isSelectedParkingStation(LatLng position)

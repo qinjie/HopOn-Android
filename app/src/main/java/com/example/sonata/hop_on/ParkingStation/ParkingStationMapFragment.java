@@ -310,6 +310,7 @@ public class ParkingStationMapFragment extends Fragment
     public void onResume() {
         super.onResume();
         mMapView.onResume();
+        getNearestParkingStation(GlobalVariable.userLocation, isSearchClicked);
     }
 
     @Override

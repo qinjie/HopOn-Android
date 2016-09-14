@@ -241,8 +241,6 @@ public class LogInActivity extends AppCompatActivity {
                         String authorizationCode = data.getString("token");
                         GlobalVariable.setAuCodeInSP(LogInActivity.this, authorizationCode);
 
-                        GlobalVariable.setUserName(data.getString("fullname"));
-
                         SharedPreferences pref = getSharedPreferences("HopOn_pref", 0);
 
                         String bookingStatus = pref.getString("bookingStatus", null);

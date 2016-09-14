@@ -20,13 +20,12 @@ public class ErrorInterceptor implements Interceptor {
         // execute request
         Response response = chain.proceed(request);
 
-
         // after request
 
         // inspect status codes of unsuccessful responses
         switch (response.code()){
             case 401:
-                Log.e("TEST","Unauthorized error for: " +request.url());
+                Log.e("TEST","Unauthorized error for: " + request.url());
                 GlobalVariable.logoutAction(GlobalVariable.activity);
         }
 

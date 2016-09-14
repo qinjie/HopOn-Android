@@ -22,7 +22,8 @@ public class CustomLoanHistoryAdapter extends RecyclerView.Adapter<CustomLoanHis
     public static class MyViewHolder extends RecyclerView.ViewHolder {
 
         TextView textViewBookingId;
-        TextView textViewBrand;
+        TextView textViewBrandModel;
+        TextView textViewSerial;
         TextView textViewBookedTime;
         TextView textViewBookedStationAddress;
         TextView textViewReturnTime;
@@ -32,7 +33,8 @@ public class CustomLoanHistoryAdapter extends RecyclerView.Adapter<CustomLoanHis
         public MyViewHolder(View itemView) {
             super(itemView);
             this.textViewBookingId            = (TextView) itemView.findViewById(R.id.booking_id_detail);
-            this.textViewBrand                = (TextView) itemView.findViewById(R.id.bicycle_brand_detail);
+            this.textViewBrandModel           = (TextView) itemView.findViewById(R.id.bicycle_brand_model);
+            this.textViewSerial               = (TextView) itemView.findViewById(R.id.bicycle_serial);
             this.textViewBookedTime           = (TextView) itemView.findViewById(R.id.booked_time_detail);
             this.textViewBookedStationAddress = (TextView) itemView.findViewById(R.id.booked_station_address);
             this.textViewReturnTime           = (TextView) itemView.findViewById(R.id.returned_time_detail);
@@ -60,14 +62,16 @@ public class CustomLoanHistoryAdapter extends RecyclerView.Adapter<CustomLoanHis
     public void onBindViewHolder(final CustomLoanHistoryAdapter.MyViewHolder holder, final int listPosition) {
 
         TextView _textViewBookingId            = holder.textViewBookingId;
-        TextView _textViewBrand                = holder.textViewBrand;
+        TextView _textViewBrandModel           = holder.textViewBrandModel;
+        TextView _textViewSerial               = holder.textViewSerial;
         TextView _textViewBookedTime           = holder.textViewBookedTime;
         TextView _textViewBookedStationAddress = holder.textViewBookedStationAddress;
         TextView _textViewReturnTime           = holder.textViewReturnTime;
         TextView _textViewReturnStationAddress = holder.textViewReturnStationAddress;
 
         _textViewBookingId.setText(dataSet.get(listPosition).getBooking_id());
-        _textViewBrand.setText(dataSet.get(listPosition).getBicycleBrand());
+        _textViewBrandModel.setText(dataSet.get(listPosition).getBicycleInfo());
+        _textViewSerial.setText(dataSet.get(listPosition).getBicycleSerial());
         _textViewBookedTime.setText(dataSet.get(listPosition).getBookedTime());
         _textViewBookedStationAddress.setText(dataSet.get(listPosition).getPickUpStationAddress());
         _textViewReturnTime.setText(dataSet.get(listPosition).getReturnTime());

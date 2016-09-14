@@ -25,8 +25,11 @@ public class LoanDetailedActivity extends AppCompatActivity {
             TextView bookingIdDetail = (TextView) findViewById(R.id.booking_id_detail);
             bookingIdDetail.setText(loanRecord.getBooking_id());
 
-            TextView bicycleBrand = (TextView) findViewById(R.id.bicycle_brand_detail);
+            TextView bicycleBrand = (TextView) findViewById(R.id.bicycle_brand);
             bicycleBrand.setText(loanRecord.getBicycleInfo());
+
+            TextView bicycleSerial = (TextView) findViewById(R.id.bicycle_brand_detail);
+            bicycleSerial.setText(loanRecord.getBicycleSerial());
 
             TextView pickUpAddress = (TextView) findViewById(R.id.pick_up_station_address);
             pickUpAddress.setText(loanRecord.getPickUpStationAddress());

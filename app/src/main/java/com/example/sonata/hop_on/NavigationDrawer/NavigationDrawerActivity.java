@@ -18,17 +18,32 @@ import android.widget.ExpandableListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.sonata.hop_on.BicycleBooking.BookingInformationClass;
 import com.example.sonata.hop_on.BicycleBooking.CurrentBookingActivity;
 import com.example.sonata.hop_on.GlobalVariable.GlobalVariable;
+import com.example.sonata.hop_on.LoanHistory.CustomLoanHistoryAdapter;
 import com.example.sonata.hop_on.LoanHistory.LoanHistoryFragment;
 import com.example.sonata.hop_on.ParkingStation.ParkingStationListActivity;
 import com.example.sonata.hop_on.ParkingStation.ParkingStationMapFragment;
+import com.example.sonata.hop_on.Preferences;
 import com.example.sonata.hop_on.R;
+import com.example.sonata.hop_on.ServiceGenerator.ServiceGenerator;
+import com.example.sonata.hop_on.ServiceGenerator.StringClient;
 import com.example.sonata.hop_on.UserProfile.ProfileFragment;
+import com.example.sonata.hop_on.UserProfile.UserProfile;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class NavigationDrawerActivity extends ActionBarActivity {
 
@@ -47,6 +62,7 @@ public class NavigationDrawerActivity extends ActionBarActivity {
         setContentView(R.layout.activity_navigation_drawer);
 
         initExpandableList();
+        getUserProfile();
 
         //+ Load default fragment
         android.app.Fragment fragment = new ParkingStationMapFragment();
@@ -64,15 +80,6 @@ public class NavigationDrawerActivity extends ActionBarActivity {
 
         mExpandableListView = (ExpandableListView) findViewById(R.id.navList);
 
-        // Customize header view
-        LayoutInflater inflater = getLayoutInflater();
-        final View listHeaderView = inflater.inflate(R.layout.nav_header, null, false);
-
-        TextView textName = (TextView) listHeaderView.findViewById(R.id.fullname);
-        textName.setText(GlobalVariable.getUserName());
-
-        mExpandableListView.addHeaderView(listHeaderView);
-
         mExpandableListData = ExpandableListDataSource.getData(this);
         mExpandableListTitle = new ArrayList(mExpandableListData.keySet());
 
@@ -81,6 +88,56 @@ public class NavigationDrawerActivity extends ActionBarActivity {
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
+    }
+
+    private void getUserProfile()
+    {
+        Preferences.showLoading(NavigationDrawerActivity.this, "User Information", "Loading data from server...");
+
+        SharedPreferences pref = getSharedPreferences("HopOn_pref", 0);
+        String auCode = pref.getString("authorizationCode", null);
+
+        StringClient client = ServiceGenerator.createService(StringClient.class, auCode);
+
+        Call<ResponseBody> call = client.getUserProfile();
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                try{
+                    Preferences.dismissLoading();
+                    int messageCode = response.code();
+
+                    if (messageCode == 200)
+                    {
+                        JSONObject data = new JSONObject(response.body().string());
+                        UserProfile userProfile = new UserProfile(data);
+                        GlobalVariable.setUserProfile(userProfile);
+
+                        // Customize header view
+                        LayoutInflater inflater = getLayoutInflater();
+                        final View listHeaderView = inflater.inflate(R.layout.nav_header, null, false);
+
+                        TextView textName = (TextView) listHeaderView.findViewById(R.id.fullname);
+                        textName.setText(GlobalVariable.getUserProfile().getUserName());
+
+                        mExpandableListView.addHeaderView(listHeaderView);
+                    }
+                    else if (messageCode == 400)
+                    {
+
+                    }
+                }
+                catch(Exception e){
+
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+            }
+        });
     }
 
     private void addDrawerItems() {

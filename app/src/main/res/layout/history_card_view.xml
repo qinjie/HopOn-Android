@@ -28,7 +28,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/booking_id_detail"
-            android:id="@+id/bicycle_brand"
+            android:id="@+id/bicycle_brand_model"
             android:text="@string/bicycle_brand"
             android:textSize="14dp"
             android:layout_marginLeft="20dp"
@@ -37,11 +37,12 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignBaseline="@+id/bicycle_brand"
-            android:layout_toRightOf="@+id/bicycle_brand"
-            android:id="@+id/bicycle_brand_detail"
+            android:layout_alignBaseline="@+id/bicycle_brand_model"
+            android:layout_toRightOf="@+id/bicycle_brand_model"
+            android:id="@+id/bicycle_serial"
             android:text="@string/bicycle_brand_detail"
             android:textSize="14dp"
+            android:textColor="@color/cardview_dark_background"
             android:layout_marginLeft="20dp" />
 
         <TextView
@@ -53,7 +54,7 @@
             android:textSize="14dp"
             android:layout_marginLeft="10dp"
             android:layout_marginTop="10dp"
-            android:layout_below="@+id/bicycle_brand"/>
+            android:layout_below="@+id/bicycle_brand_model"/>
 
         <TextView
             android:layout_width="wrap_content"

@@ -34,6 +34,7 @@ import com.example.sonata.hop_on.R;
 import com.example.sonata.hop_on.ServiceGenerator.ServiceGenerator;
 import com.example.sonata.hop_on.ServiceGenerator.StringClient;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.vision.text.Text;
 import com.google.gson.JsonObject;
 
 import org.json.JSONArray;
@@ -115,6 +116,16 @@ public class BookingActivity extends AppCompatActivity {
 
                         if (data.length() > 0) {
                             showSelectedBicycleInfo(selectedBicycleIndex);
+
+                            TextView notification = (TextView) findViewById(R.id.notification);
+                            if (data.length() == 1)
+                            {
+                                notification.setText("<- Only 1 model is available ->");
+                            }
+                            else
+                            {
+                                notification.setText("<- Change the model ->");
+                            }
                         }
                     }
                 } catch (Exception e) {
@@ -164,7 +175,7 @@ public class BookingActivity extends AppCompatActivity {
             String bookingStatus = pref.getString("bookingStatus", null);
             if (bookingStatus.compareTo(GlobalVariable.FREE) == 0)
             {
-                btn_bookNow.setVisibility(View.VISIBLE);
+                btn_bookNow.setEnabled(true);
                 btn_bookNow.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -174,7 +185,7 @@ public class BookingActivity extends AppCompatActivity {
             }
             else if (bookingStatus.compareTo(GlobalVariable.BOOKED) == 0)
             {
-                btn_bookNow.setVisibility(View.INVISIBLE);
+                btn_bookNow.setEnabled(false);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -249,7 +260,14 @@ public class BookingActivity extends AppCompatActivity {
         brand_model.setText(bicycle.getBicycleBrand() + " / " + bicycle.getBicycleModel());
 
         TextView station_status = (TextView) findViewById((R.id.status_station));
-        station_status.setText(bicycle.getAvailabelNumber() + "/" + bicycle.getTotalNumber());
+
+        String content = "Available " + bicycle.getAvailabelNumber() + " bicycles for this model";
+        if (Integer.valueOf(bicycle.getAvailabelNumber()) == 1)
+        {
+            content = "Available " + bicycle.getAvailabelNumber() + " bicycle for this model";
+        }
+
+        station_status.setText(content);
 
         ImageView imageView_1 = (ImageView) findViewById(R.id.image_1);
         if (bicycle.listImageUrl.size() > 0)

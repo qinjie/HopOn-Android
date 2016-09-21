@@ -5,7 +5,7 @@
     <item
         android:id="@+id/action_view_map"
         android:orderInCategory="100"
-        android:icon="@mipmap/ic_view_map"
+        android:icon="@mipmap/ic_station_map_view"
         android:title="List"
         app:showAsAction="always"/>
 

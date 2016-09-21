@@ -124,6 +124,7 @@ public class BeaconScanningService extends Service implements BeaconConsumer{
             intent.putExtra("type", cnt == 6 ? "Return" : "Unlock");
             sendBroadcast(intent);
             stopSelf();
+            beaconManager.unbind(this);
         }
     }
 }

@@ -14,14 +14,14 @@
         <item>Current Booking</item>
         <item>History</item>
         <item>Profile</item>
-        <item>Exit</item>
+        <item>Log out</item>
     </string-array>
 
     <string-array name="parkingStations"></string-array>
     <string-array name="currentBooking"></string-array>
     <string-array name="history"></string-array>
     <string-array name="profile"></string-array>
-    <string-array name="exit"></string-array>
+    <string-array name="logout"></string-array>
 
     <!--    Permissions    -->
     <string name="permission_rationale_location">Access to the location service is required to demonstrate the \'my location\' feature, which shows your current location on the map.</string>

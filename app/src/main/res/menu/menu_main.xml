@@ -6,7 +6,7 @@
     <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
-        android:icon="@mipmap/ic_view_list"
+        android:icon="@mipmap/ic_station_list_view"
         android:title="List"
         app:showAsAction="always"/>
 

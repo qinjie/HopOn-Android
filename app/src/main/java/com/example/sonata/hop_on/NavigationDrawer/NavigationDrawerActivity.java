@@ -177,8 +177,8 @@ public class NavigationDrawerActivity extends ActionBarActivity {
                         fragment = new ProfileFragment();
                         break;
                     case 4: // Exit
-                        finish();
-                        System.exit(0);
+                        GlobalVariable.logoutAction(NavigationDrawerActivity.this);
+                        return true;
                 }
 
                 FragmentManager fragmentManager = getFragmentManager();

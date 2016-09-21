@@ -36,7 +36,6 @@ public class GlobalVariable {
     public static final String LOCKED = "2";
     public static final String UNLOCKED = "3";
 
-
     public static UserProfile userProfile;
 
     public static Activity activity;
@@ -54,6 +53,8 @@ public class GlobalVariable {
     public static ArrayList<Beacon> beaconArrayList = null;
 
     public static boolean bookingMessage = false;
+
+    public static boolean beaconScanning = false;
 
     public static void setUserProfile(UserProfile _userProfile)
     {

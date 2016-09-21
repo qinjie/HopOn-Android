@@ -37,8 +37,8 @@ public class ExpandableListDataSource {
         List<String> profile = Arrays.asList(context.getResources().getStringArray(R.array.profile));
         expandableListData.put(hopOnFunctions.get(3), profile);
 
-        List<String> exit = Arrays.asList(context.getResources().getStringArray(R.array.exit));
-        expandableListData.put(hopOnFunctions.get(4), exit);
+        List<String> logout = Arrays.asList(context.getResources().getStringArray(R.array.logout));
+        expandableListData.put(hopOnFunctions.get(4), logout);
 
         return expandableListData;
     }

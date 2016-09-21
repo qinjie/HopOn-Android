@@ -51,6 +51,7 @@ public class BookingInformationClass {
 
     String enc;
     String user_id;
+    String auth_key;
 
     public BookingInformationClass() {};
     public BookingInformationClass(JSONObject data)
@@ -89,6 +90,7 @@ public class BookingInformationClass {
 
             enc = data.getString("enc");
             user_id = data.getString("user_id");
+            auth_key = data.getString("auth_key");
         }
         catch (Exception e)
         {

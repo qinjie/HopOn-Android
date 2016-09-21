@@ -325,6 +325,8 @@ public class ParkingStationMapFragment extends Fragment
         // Hide the zoom controls as the button panel will cover it.
         mMap.getUiSettings().setZoomControlsEnabled(false);
 
+        mMap.getUiSettings().setCompassEnabled(false);
+
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {

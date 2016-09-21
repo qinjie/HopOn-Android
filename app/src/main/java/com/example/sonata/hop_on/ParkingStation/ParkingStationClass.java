@@ -39,7 +39,12 @@ public class ParkingStationClass {
 
     public String getAvailableBicycles()
     {
-        return String.valueOf(numberOfAvailableBicycle) + " bicycles";
+        if (Integer.valueOf(numberOfAvailableBicycle) == 1)
+        {
+            return "Available " + String.valueOf(numberOfAvailableBicycle) + " bicycle";
+        }
+
+        return "Available " + String.valueOf(numberOfAvailableBicycle) + " bicycles";
     }
 
     public String getTotalBicycles()

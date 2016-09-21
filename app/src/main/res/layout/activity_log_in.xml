@@ -65,8 +65,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:textSize="15sp"
-                    android:hint="email address or mobile phone number"
-                    android:text="1111"/>
+                    android:hint="Email or phone number"
+                    android:text="3333"/>
             </android.support.design.widget.TextInputLayout>
 
             <!--  Password Label -->
@@ -79,7 +79,7 @@
                     android:layout_height="match_parent"
                     android:textSize="13sp"
                     android:inputType="textPassword"
-                    android:hint="enter your password"
+                    android:hint="Password"
                     android:text="123456"/>
             </android.support.design.widget.TextInputLayout>
 
@@ -96,7 +96,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="24dp"
-                android:text="Don't have an account? Register now"
+                android:text="New to Hop On? Sign up now"
                 android:gravity="center"
                 android:textSize="16sp"/>
 
@@ -104,7 +104,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="14dp"
-                android:text="Forget password?"
+                android:text="Forgot password?"
                 android:gravity="center"
                 android:textSize="16dp"/>
         </LinearLayout>
